@@ -1,0 +1,141 @@
+{
+  "npc_id": "fed_natty",
+  "quest_id": "consett_main_02",
+  "quest_name": "Gym, Tan, Laundry",
+  "region": "consett",
+  "start_node": "entrance",
+  "nodes": {
+    "entrance": {
+      "speaker": "Fed Natty",
+      "text": "Alright mate, you must be the new lad. Heard you got sacked from that office. Best thing that ever happened to you, trust me.",
+      "mood_variants": {
+        "extreme_bull": "MATE! Best day to start! Markets are PUMPING and I need bodies on the floor selling NattyMax!",
+        "bull": "Good timing, lad. Business is good. Real good.",
+        "bear": "Listen... it's been a rough week. Markets are down. But that's when REAL men step up.",
+        "extreme_bear": "...look, it's been bad. Really bad. But I'm still here. Still NATURAL. That's what matters."
+      },
+      "options": [
+        {
+          "text": "Cheers. So what's the deal with this gym then?",
+          "tags": ["neutral", "curious"],
+          "next": "gym_pitch"
+        },
+        {
+          "text": "I saw your Scammagram. You said you could help me make money?",
+          "tags": ["eager", "impressed_by_money"],
+          "next": "money_pitch"
+        },
+        {
+          "text": "You don't look natural to me, mate.",
+          "tags": ["skeptic", "honest"],
+          "requires": {"stat": "awareness", "value": 5},
+          "next_pass": "called_out",
+          "next_fail": "gym_pitch",
+          "stat_effects": {"grotty_trust": 5}
+        }
+      ]
+    },
+    "gym_pitch": {
+      "speaker": "Fed Natty",
+      "text": "This isn't just a gym, bro. This is the Iron Temple. This is where sigma males are FORGED. I built this empire from NOTHING. Chicken, rice, and DISCIPLINE.",
+      "mood_variants": {
+        "extreme_bear": "This gym is... it's all I've got left. The crypto's tanked but these gains? These are REAL."
+      },
+      "options": [
+        {
+          "text": "Impressive. How do I get started?",
+          "tags": ["eager"],
+          "next": "tutorial_start",
+          "stat_effects": {"respect": 10}
+        },
+        {
+          "text": "Right... so about the money-making bit?",
+          "tags": ["impatient"],
+          "next": "money_pitch"
+        }
+      ]
+    },
+    "money_pitch": {
+      "speaker": "Fed Natty",
+      "text": "Crapto, lad. That's where the real money is. I'll set you up with an account. But first — you need to LOOK the part. Nobody trusts a broke-looking sigma. Hit the weights.",
+      "options": [
+        {
+          "text": "Fair enough. Let's get to work.",
+          "tags": ["willing"],
+          "next": "tutorial_start",
+          "stat_effects": {"respect": 15, "hustle_knowledge": 1}
+        },
+        {
+          "text": "I don't need to look any particular way to trade crypto.",
+          "tags": ["skeptic"],
+          "next": "natty_insists",
+          "stat_effects": {"awareness": 2}
+        }
+      ]
+    },
+    "called_out": {
+      "speaker": "Fed Natty",
+      "text": "...What? Natural? Course I am. Hundred percent. It's chicken, rice, and— look, are you here to train or are you here to chat bollocks?",
+      "mood_variants": {
+        "extreme_bear": "Don't you DARE. Not today. Not with the markets like this. I am NATURAL and I am FINE."
+      },
+      "options": [
+        {
+          "text": "[Back off] Sorry mate, let's just train.",
+          "tags": ["diplomatic"],
+          "next": "tutorial_start",
+          "stat_effects": {"respect": 5}
+        },
+        {
+          "text": "[Push it] Your back acne says otherwise.",
+          "tags": ["aggressive", "honest"],
+          "next": "natty_angry",
+          "stat_effects": {"respect": -10, "awareness": 5, "grotty_trust": 10}
+        }
+      ]
+    },
+    "natty_angry": {
+      "speaker": "Fed Natty",
+      "text": "Right. You've got some nerve, new lad. I like that. OR I hate it. Haven't decided yet. Either way — you're doing EXTRA sets today.",
+      "options": [
+        {
+          "text": "Bring it on.",
+          "tags": ["confident"],
+          "next": "tutorial_start",
+          "stat_effects": {"respect": 20, "testosterone_level": 1}
+        }
+      ]
+    },
+    "natty_insists": {
+      "speaker": "Fed Natty",
+      "text": "See, THAT attitude is why you're unemployed, bro. The grindset isn't just about charts. It's a LIFESTYLE. Image is everything. The body is the brand.",
+      "options": [
+        {
+          "text": "[Give in] Alright, I'll play along.",
+          "tags": ["compliant"],
+          "next": "tutorial_start",
+          "stat_effects": {"respect": 10}
+        },
+        {
+          "text": "[Double down] My brand is my brain, not my biceps.",
+          "tags": ["intellectual"],
+          "next": "tutorial_start",
+          "stat_effects": {"awareness": 3, "respect": -5}
+        }
+      ]
+    },
+    "tutorial_start": {
+      "speaker": "Fed Natty",
+      "text": "Right then. First rule of the Iron Temple: we TRAIN, we EAT CLEAN, and we make MONEY. In that order. Let me show you the basics.",
+      "options": [
+        {
+          "text": "[Begin gym tutorial]",
+          "tags": ["continue"],
+          "next": "end",
+          "outcome": "success",
+          "stat_effects": {"hustle_knowledge": 1}
+        }
+      ]
+    }
+  }
+}

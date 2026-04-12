@@ -1,0 +1,84 @@
+{
+  "coins": [
+    {
+      "ticker": "BCON",
+      "name": "BitCon",
+      "real_source": "bitcoin",
+      "scale_factor": 0.001,
+      "volatility_multiplier": 1.0,
+      "unlock_region": "consett",
+      "description": "The original crapto. Everyone's heard of it. Nobody understands it.",
+      "icon": "res://assets/textures/ui/coins/bcon.png"
+    },
+    {
+      "ticker": "EETH",
+      "name": "Etherium",
+      "real_source": "ethereum",
+      "scale_factor": 0.01,
+      "volatility_multiplier": 1.2,
+      "unlock_region": "consett",
+      "description": "Like BitCon but with more syllables. The smart person's crapto (they're not smart).",
+      "icon": "res://assets/textures/ui/coins/eeth.png"
+    },
+    {
+      "ticker": "SLME",
+      "name": "Solame",
+      "real_source": "solana",
+      "scale_factor": 0.1,
+      "volatility_multiplier": 1.5,
+      "unlock_region": "consett",
+      "description": "Fast, cheap, and unreliable. Like a Consett takeaway.",
+      "icon": "res://assets/textures/ui/coins/slme.png"
+    },
+    {
+      "ticker": "DGST",
+      "name": "Dogshit",
+      "real_source": "dogecoin",
+      "scale_factor": 10.0,
+      "volatility_multiplier": 2.0,
+      "unlock_region": "london",
+      "description": "A meme coin that started as a joke. Still a joke. People buy it anyway.",
+      "icon": "res://assets/textures/ui/coins/dgst.png"
+    },
+    {
+      "ticker": "XRPO",
+      "name": "ExRipOff",
+      "real_source": "ripple",
+      "scale_factor": 1.0,
+      "volatility_multiplier": 1.3,
+      "unlock_region": "london",
+      "description": "Banks might use it. They won't. But they might.",
+      "icon": "res://assets/textures/ui/coins/xrpo.png"
+    },
+    {
+      "ticker": "SSCM",
+      "name": "Shiba Scamu",
+      "real_source": "shiba-inu",
+      "scale_factor": 100000,
+      "volatility_multiplier": 3.0,
+      "unlock_region": "miami",
+      "description": "A copy of a joke. The most honest thing in crypto.",
+      "icon": "res://assets/textures/ui/coins/sscm.png"
+    },
+    {
+      "ticker": "CKNW",
+      "name": "Cardaknow",
+      "real_source": "cardano",
+      "scale_factor": 1.0,
+      "volatility_multiplier": 1.1,
+      "unlock_region": "miami",
+      "description": "Academic crapto. Peer-reviewed and still worthless.",
+      "icon": "res://assets/textures/ui/coins/cknw.png"
+    },
+    {
+      "ticker": "PSCM",
+      "name": "Polkascam",
+      "real_source": "polkadot",
+      "scale_factor": 0.5,
+      "volatility_multiplier": 1.4,
+      "unlock_region": "dubai",
+      "description": "Connects all the other scams together. Blockchain of blockchains.",
+      "icon": "res://assets/textures/ui/coins/pscm.png"
+    }
+  ]
+}
