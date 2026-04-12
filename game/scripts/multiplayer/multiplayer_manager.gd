@@ -148,7 +148,8 @@ func _check_rally_state() -> void:
 	if active_rally.size() == 0:
 		return
 
-	var present := active_rally["present"].size()
+	var present_list: Array = active_rally["present"]
+	var present: int = present_list.size()
 	var required: int = active_rally["required"]
 
 	rally_point_waiting.emit(active_rally["quest_id"], present, required)

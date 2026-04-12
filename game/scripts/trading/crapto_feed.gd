@@ -186,7 +186,9 @@ func buy(ticker: String, amount: float) -> bool:
 
 	GameState.add_cash(-cost)
 	var pos: Dictionary = portfolio.get(ticker, {"amount": 0.0, "avg_buy_price": 0.0})
-	var total_cost := pos["avg_buy_price"] * pos["amount"] + cost
+	var avg_buy: float = pos["avg_buy_price"]
+	var amt_before: float = pos["amount"]
+	var total_cost: float = avg_buy * amt_before + cost
 	pos["amount"] += amount
 	pos["avg_buy_price"] = total_cost / pos["amount"] if pos["amount"] > 0 else 0.0
 	portfolio[ticker] = pos
@@ -252,8 +254,11 @@ func get_portfolio_pnl() -> float:
 	for ticker in portfolio:
 		var pos: Dictionary = portfolio[ticker]
 		if pos["amount"] > 0:
-			var current_val := pos["amount"] * current_prices.get(ticker, {}).get("price", 0.0)
-			var cost_basis := pos["amount"] * pos["avg_buy_price"]
+			var amt: float = pos["amount"]
+			var px: float = current_prices.get(ticker, {}).get("price", 0.0)
+			var avg: float = pos["avg_buy_price"]
+			var current_val: float = amt * px
+			var cost_basis: float = amt * avg
 			pnl += current_val - cost_basis
 	return pnl
 

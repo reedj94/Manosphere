@@ -140,7 +140,7 @@ func select_option(option_index: int) -> void:
 
 	# Check for stat requirements
 	if selected.has("requires"):
-		var check := selected["requires"]
+		var check: Dictionary = selected["requires"]
 		var stat_name: String = check.get("stat", "")
 		var required: int = check.get("value", 0)
 		var actual: int = _get_stat_value(stat_name)
