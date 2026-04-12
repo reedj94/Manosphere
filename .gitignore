@@ -1,0 +1,32 @@
+# Godot
+.godot/
+*.import
+export_presets.cfg
+export.cfg
+
+# Build
+build/
+export/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Dependencies
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
