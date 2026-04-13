@@ -73,6 +73,11 @@ var karma: int = 0  # positive = ethical, negative = exploitative
 var grotty_trust: int = 50  # 0-100
 var real_one_relationship: int = 0  # 0-100
 
+# Faction relations (faction_id -> hostility 0-100)
+var faction_hostility: Dictionary = {}
+var faction_territory: Dictionary = {}
+var defeated_factions: Array[String] = []
+
 # Co-op
 var is_host: bool = true
 var co_op_mode: String = "shared_journey"  # or "parallel_hustles"
@@ -187,6 +192,9 @@ func get_save_data() -> Dictionary:
 		"real_one_relationship": real_one_relationship,
 		"real_one_gender": real_one_gender,
 		"real_one_romance": real_one_romance,
+		"faction_hostility": faction_hostility,
+		"faction_territory": faction_territory,
+		"defeated_factions": defeated_factions,
 	}
 
 

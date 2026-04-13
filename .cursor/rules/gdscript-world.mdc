@@ -1,0 +1,18 @@
+---
+description: Enforced when editing world/level scripts
+globs: game/scripts/world/**/*.gd
+---
+
+# World Script Rules
+
+These scripts build and manage game world geometry, POIs, and props.
+
+## Requirements
+- All buildings/props must be spawned from POIRegistry data — no hardcoded positions
+- Every spawned node must have a unique `name` matching its `poi_id` or prop type
+- Collision layers: 1 = world geometry, 2 = player, 4 = NPCs, 8 = interaction zones
+- Area3D interaction zones must connect `body_entered`/`body_exited` with the POI id bound
+- Street props (lights, benches, bins) go under the `Buildings` node
+- Materials: set `roughness` >= 0.85 for the brutalist aesthetic
+- Parks use flat geometry (height 0.15), not full building boxes
+- Label3D signs: billboard mode enabled, pixel_size 0.01, outline_size 8

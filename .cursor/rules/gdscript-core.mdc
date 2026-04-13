@@ -1,0 +1,23 @@
+---
+description: Enforced when editing core game systems (autoloads, singletons)
+globs: game/scripts/core/**/*.gd
+---
+
+# Core Systems Rules (Autoloads)
+
+These files are global singletons loaded for the entire game session.
+
+## Requirements
+- Every public function must have a return type annotation
+- Every signal must have typed parameters
+- No direct scene manipulation — core scripts must be scene-agnostic
+- Use `clampi`/`clampf` for bounded values, never raw arithmetic
+- Dictionary values from user data must be explicitly typed (no `:=` with Variant)
+- Save/load: every new persistent field must be added to `get_save_data()` AND `load_save_data()`
+- Constants use SCREAMING_SNAKE_CASE
+- Enums at the top of the file, after signals
+
+## Performance
+- No allocations in functions called every frame
+- Prefer `match` over chained `if/elif` for string/enum dispatch
+- Signals over polling — never check state in `_process()` when a signal exists

@@ -1,0 +1,15 @@
+---
+description: Enforced when editing trading/economy scripts
+globs: game/scripts/trading/**/*.gd,game/scripts/core/economy_manager.gd,game/scripts/core/market_mood.gd
+---
+
+# Trading & Economy Rules
+
+## Requirements
+- All monetary values as `float`, never `int`
+- Price calculations must factor in `MarketMood` current state
+- Portfolio dictionary values must be explicitly typed when read (no `:=` from Dictionary)
+- Buy/sell operations must go through `GameState.add_cash()` — never modify `cash` directly
+- Crapto ticker names must be satirical/fictional — no real cryptocurrency names
+- Bot engine must have configurable risk parameters, not hardcoded thresholds
+- All percentage values stored as 0.0-1.0, displayed as 0-100%

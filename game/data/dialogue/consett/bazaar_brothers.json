@@ -1,0 +1,201 @@
+{
+  "npc_id": "big_kaz",
+  "quest_id": "consett_vape_confrontation",
+  "faction_id": "bazaar_brothers_consett",
+  "location": "consett_vape_shop",
+  "start_node": "start",
+  "nodes": {
+    "start": {
+      "speaker": "Big Kaz",
+      "text": "Oi oi! Look who's wandered into Cloud Nine-and-a-Half! You're that lad chatting up Grotty Green, aren't ya?",
+      "mood_variants": {
+        "crash": "Oi... market's in the bin, and now YOU walk in? This day keeps getting worse, brutha.",
+        "boom": "RD4 brutha! Business is BOOMING! So why you gotta come in here and ruin my vibe?"
+      },
+      "options": [
+        {
+          "text": "I don't know what you're talking about, mate.",
+          "tags": ["deflect"],
+          "next": "deny"
+        },
+        {
+          "text": "What's it to you? Free country, isn't it?",
+          "tags": ["confrontational"],
+          "next": "confrontation",
+          "stat_effects": { "respect": 5 }
+        },
+        {
+          "text": "Maybe we can work something out? Business is business.",
+          "tags": ["negotiate"],
+          "requires": { "stat": "hustle_knowledge", "value": 3 },
+          "next_pass": "deal_offered",
+          "next_fail": "deal_rejected",
+          "karma": -1
+        },
+        {
+          "text": "[Use phrase] I'm on my grindset, bruv. No time for drama.",
+          "tags": ["manosphere_script"],
+          "requires_phrase_tier": 1,
+          "next": "phrase_reaction"
+        }
+      ]
+    },
+    "deny": {
+      "speaker": "Big Kaz",
+      "text": "Don't play daft with me! My cousin's cousin saw you at her 'spiritual sessions'. She owes us THREE bookings! A THOUSAND men each! Do you know what that's WORTH?",
+      "options": [
+        {
+          "text": "Spiritual sessions? What are you on about?",
+          "next": "explains_holy_scam"
+        },
+        {
+          "text": "Sounds like that's between you and her.",
+          "next": "threat_mild"
+        }
+      ]
+    },
+    "confrontation": {
+      "speaker": "Big Kaz",
+      "text": "Free country?! RD4 brutha! This is OUR postcode! Grotty Green does holy massages for OUR clients! A thousand men, spiritual healing, big money! You're cutting into the operation!",
+      "options": [
+        {
+          "text": "Holy massages? That's the most ridiculous thing I've ever heard.",
+          "next": "explains_holy_scam"
+        },
+        {
+          "text": "Try and stop me then.",
+          "tags": ["aggressive"],
+          "next": "fight_warning",
+          "stat_effects": { "respect": 10 }
+        }
+      ]
+    },
+    "explains_holy_scam": {
+      "speaker": "Big Kaz",
+      "text": "It's NOT ridiculous! She does intense religious massages. A thousand men at a time. In a field. Very spiritual. Very profitable. We take 40%. Don't ask questions, brutha.",
+      "options": [
+        {
+          "text": "That sounds... deeply illegal.",
+          "next": "not_illegal",
+          "stat_effects": { "awareness": 2 }
+        },
+        {
+          "text": "40%? That's a terrible cut. I could negotiate better for her.",
+          "next": "deal_offered",
+          "karma": -2
+        },
+        {
+          "text": "Right. I'm leaving.",
+          "next": "leave_peaceful"
+        }
+      ]
+    },
+    "not_illegal": {
+      "speaker": "Big Kaz",
+      "text": "It's NOT illegal, it's SPIRITUAL! We've got certificates! Well, my cousin's printing them. LOOK — stay away from Green, or next time it won't be just words. RD4, brutha.",
+      "options": [
+        {
+          "text": "I'll think about it.",
+          "next": "end",
+          "outcome": "partial",
+          "stat_effects": { "respect": -5 }
+        },
+        {
+          "text": "Nah. I do what I want.",
+          "next": "fight_warning",
+          "stat_effects": { "respect": 15 }
+        }
+      ]
+    },
+    "deal_offered": {
+      "speaker": "Big Kaz",
+      "text": "Business talk? NOW we're speaking the same language, brutha! Here's the deal: you bring us three new clients for the holy sessions, and we forget we ever saw you near Green.",
+      "options": [
+        {
+          "text": "Deal. Where do I find these... clients?",
+          "next": "end",
+          "choice_id": "accepted_bazaar_deal",
+          "outcome": "success",
+          "karma": -5,
+          "stat_effects": { "cash": -50 }
+        },
+        {
+          "text": "Actually, on second thought... no.",
+          "next": "deal_rejected"
+        }
+      ]
+    },
+    "deal_rejected": {
+      "speaker": "Big Kaz",
+      "text": "You don't have the BUSINESS BRAIN for this, brutha. Fine. But every time you talk to Green, we hear about it. And we REMEMBER. RD4!",
+      "options": [
+        {
+          "text": "Whatever.",
+          "next": "end",
+          "outcome": "fail",
+          "stat_effects": { "respect": 5 }
+        }
+      ]
+    },
+    "phrase_reaction": {
+      "speaker": "Big Kaz",
+      "text": "Grindset?! GRINDSET?! Brutha, I've been on the grindset since you were in NAPPIES! I was grinding when grinding wasn't even a WORD! Don't come in here with your TikTok vocabulary!",
+      "options": [
+        {
+          "text": "Fair point, actually.",
+          "next": "leave_peaceful"
+        },
+        {
+          "text": "Your grindset is selling mango ice vapes to 14-year-olds, mate.",
+          "next": "fight_warning",
+          "stat_effects": { "respect": 20 }
+        }
+      ]
+    },
+    "fight_warning": {
+      "speaker": "Big Kaz",
+      "text": "RIGHT! That's IT! Boys! BOYS! Get the disposable vapes! The BIG ones! Nobody disrespects the Bazaar Brothers on THEIR high street!",
+      "options": [
+        {
+          "text": "[FIGHT] Bring it on.",
+          "next": "end",
+          "outcome": "fight",
+          "stat_effects": { "respect": 25 }
+        },
+        {
+          "text": "[RUN] Actually I just remembered I left the oven on.",
+          "next": "end",
+          "outcome": "fled",
+          "stat_effects": { "respect": -10 }
+        }
+      ]
+    },
+    "threat_mild": {
+      "speaker": "Big Kaz",
+      "text": "Between me and her?! BRUTHA! When she misses a session, that's MY money! MY cousin's money! MY cousin's cousin's money! The whole FAMILY TREE is affected! Stay. Away.",
+      "options": [
+        {
+          "text": "Alright, alright. I hear you.",
+          "next": "end",
+          "outcome": "partial"
+        },
+        {
+          "text": "Make me.",
+          "next": "fight_warning",
+          "stat_effects": { "respect": 10 }
+        }
+      ]
+    },
+    "leave_peaceful": {
+      "speaker": "Big Kaz",
+      "text": "Smart lad. Remember — RD4 brutha. We're ALWAYS watching. Mango ice on your way out?",
+      "options": [
+        {
+          "text": "...No thanks.",
+          "next": "end",
+          "outcome": "success"
+        }
+      ]
+    }
+  }
+}

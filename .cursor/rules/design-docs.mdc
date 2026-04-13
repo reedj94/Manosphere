@@ -1,0 +1,24 @@
+---
+description: Enforced when editing design documents
+globs: design/**/*.md
+---
+
+# Design Document Rules
+
+## GDD Requirements
+Every system GDD under `design/gdd/` must include:
+1. **Overview** — one-paragraph summary
+2. **Core Mechanics** — how it works
+3. **Player Experience** — what the player feels/does
+4. **Balancing** — numbers, formulas, tuning knobs
+5. **Edge Cases** — what happens when things go wrong
+6. **Dependencies** — which other systems it touches
+7. **Open Questions** — unresolved design decisions
+
+## Narrative Docs
+- Character descriptions must include: name, faction, motivation, barks, quest role
+- Dialogue flow docs must reference the JSON file path
+
+## Level Design
+- Region docs must list all POIs with positions and gameplay purpose
+- Include a rough spatial layout diagram (ASCII or reference image)

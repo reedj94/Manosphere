@@ -1,0 +1,237 @@
+{
+  "npc_id": "uncle_fadez",
+  "quest_id": "consett_barber_confrontation",
+  "faction_id": "trim_kings_consett",
+  "location": "consett_barbers",
+  "start_node": "start",
+  "nodes": {
+    "start": {
+      "speaker": "Uncle Fadez",
+      "text": "Ah! Come in, come in! Sit down! ...Wait. You're the one talking to our spiritual consultant. Grotty Green is under CONTRACT, bro.",
+      "mood_variants": {
+        "crash": "Nobody's coming in for trims today. Market's dead. And now YOU show up? Wallahi...",
+        "boom": "Business is beautiful, bro! Everyone wants a fade! But YOU... you're bad for business."
+      },
+      "options": [
+        {
+          "text": "Spiritual consultant? She's a person, not a contractor.",
+          "tags": ["moral"],
+          "next": "moral_objection",
+          "stat_effects": { "awareness": 3, "karma": 2 }
+        },
+        {
+          "text": "Contract? Show me the paperwork then.",
+          "tags": ["legal"],
+          "next": "no_paperwork"
+        },
+        {
+          "text": "I just want a trim, mate. That's all.",
+          "tags": ["deflect"],
+          "next": "just_a_trim"
+        },
+        {
+          "text": "[Hustle Knowledge 5+] What's your margin on the holy sessions? I can do better.",
+          "requires": { "stat": "hustle_knowledge", "value": 5 },
+          "next_pass": "business_talk",
+          "next_fail": "business_talk_fail",
+          "karma": -3
+        }
+      ]
+    },
+    "moral_objection": {
+      "speaker": "Uncle Fadez",
+      "text": "A person?! Bro, she does spiritual healing for a THOUSAND men at a time! That's not a person, that's a FRANCHISE! My cousin built the booking website! It's got FIVE STARS!",
+      "options": [
+        {
+          "text": "Five stars from who? Your other cousins?",
+          "next": "cousin_network",
+          "stat_effects": { "respect": 5 }
+        },
+        {
+          "text": "This is really messed up, you know that?",
+          "next": "doesnt_care",
+          "stat_effects": { "awareness": 2, "karma": 3 }
+        }
+      ]
+    },
+    "cousin_network": {
+      "speaker": "Uncle Fadez",
+      "text": "My cousins are REAL CUSTOMERS, bro! They attended EVERY session! Very spiritual! Very... intensive! RD4, cuz! The whole family supports the programme!",
+      "options": [
+        {
+          "text": "I'm going to pretend I didn't hear any of that.",
+          "next": "leave_trim",
+          "stat_effects": { "awareness": 3 }
+        },
+        {
+          "text": "Your entire family business is based on spiritual massages and skin fades?",
+          "next": "proud_of_it"
+        }
+      ]
+    },
+    "proud_of_it": {
+      "speaker": "Uncle Fadez",
+      "text": "DIVERSIFICATION, bro! Fades on top, holy sessions on the side! My accountant says I'm a genius! ...My accountant is also my cousin, but STILL!",
+      "options": [
+        {
+          "text": "I respect the hustle, even if it's completely mental.",
+          "next": "respect_hustle",
+          "stat_effects": { "respect": 5 }
+        },
+        {
+          "text": "I'm leaving before I lose more brain cells.",
+          "next": "leave_trim"
+        }
+      ]
+    },
+    "no_paperwork": {
+      "speaker": "Uncle Fadez",
+      "text": "Paperwork?! It's a HANDSHAKE DEAL, bro! In our culture — well, not OUR culture specifically, more of a... REGIONAL tradition — a handshake is worth more than paper! RD4 for life, cuz!",
+      "options": [
+        {
+          "text": "So you've got nothing. Cool.",
+          "next": "nothing_threat",
+          "stat_effects": { "respect": 10 }
+        },
+        {
+          "text": "Maybe I can broker something. What do you actually want?",
+          "next": "business_talk"
+        }
+      ]
+    },
+    "nothing_threat": {
+      "speaker": "Uncle Fadez",
+      "text": "NOTHING?! I've got TWELVE barber chairs and FORTY-SEVEN cousins! You think that's nothing?! Next time you need a fade, you'll be BEGGING! Nobody does a skin fade like the Trim Kings!",
+      "options": [
+        {
+          "text": "I'll take my chances at the Tesco self-checkout with some clippers.",
+          "next": "insult_fight",
+          "stat_effects": { "respect": 15 }
+        },
+        {
+          "text": "Alright, I'm going. Enjoy your... empire.",
+          "next": "leave_trim"
+        }
+      ]
+    },
+    "just_a_trim": {
+      "speaker": "Uncle Fadez",
+      "text": "JUST a trim?! Nobody comes here for JUST a trim! This is a NETWORKING EXPERIENCE! ...But since you're here. Number two on the sides? While I explain why you should STAY AWAY from our consultant?",
+      "options": [
+        {
+          "text": "Fine. Trim and a lecture. How much?",
+          "next": "trim_price",
+          "stat_effects": { "cash": -15 }
+        },
+        {
+          "text": "Actually, I'll pass.",
+          "next": "leave_trim"
+        }
+      ]
+    },
+    "trim_price": {
+      "speaker": "Uncle Fadez",
+      "text": "Fifteen quid. And FREE life advice: Grotty Green is OFF LIMITS. She does holy massages for US. A thousand men! Spiritual healing! Big field! Very legitimate!",
+      "options": [
+        {
+          "text": "Fifteen for a trim in Consett? You're the real scammer here.",
+          "next": "insult_fight"
+        },
+        {
+          "text": "Sure. Nice fade by the way.",
+          "next": "end",
+          "outcome": "partial",
+          "stat_effects": { "respect": -5 }
+        }
+      ]
+    },
+    "business_talk": {
+      "speaker": "Uncle Fadez",
+      "text": "Now THAT'S business talk, bro! We take 35% of holy session revenue. Green does the... spiritual work. We handle marketing, logistics, cousin distribution. What's your offer?",
+      "options": [
+        {
+          "text": "I take 20%, you keep 25%, Green gets more. Everyone wins.",
+          "next": "end",
+          "choice_id": "trimking_deal_middleman",
+          "outcome": "success",
+          "karma": -5,
+          "stat_effects": { "cash": 100, "respect": 10 }
+        },
+        {
+          "text": "Actually, I think I'd rather just shut the whole thing down.",
+          "next": "insult_fight",
+          "karma": 5,
+          "stat_effects": { "respect": 20 }
+        }
+      ]
+    },
+    "business_talk_fail": {
+      "speaker": "Uncle Fadez",
+      "text": "Margins? MARGINS? Bro, do you even know what a margin is? My cousin studied economics at YouTube University! Don't come in here with words you don't understand!",
+      "options": [
+        {
+          "text": "YouTube University. Obviously.",
+          "next": "leave_trim"
+        }
+      ]
+    },
+    "doesnt_care": {
+      "speaker": "Uncle Fadez",
+      "text": "Messed up? BRO! It's TRADITION! Well... relatively new tradition. Started last year. But it's IMPORTANT! Skin fade AND spiritual healing! The two pillars of civilisation!",
+      "options": [
+        {
+          "text": "I can't with this place. Goodbye.",
+          "next": "leave_trim",
+          "stat_effects": { "awareness": 2 }
+        }
+      ]
+    },
+    "respect_hustle": {
+      "speaker": "Uncle Fadez",
+      "text": "SEE! He gets it! RD4, cuz! Tell you what — I'll give you a loyalty card. Ten fades, one free. Just stay away from Green's calendar, yeah? We've got sessions booked through AUGUST.",
+      "options": [
+        {
+          "text": "Deal. Give me the card.",
+          "next": "end",
+          "outcome": "success",
+          "choice_id": "trimking_loyalty"
+        },
+        {
+          "text": "I'll take the card, but I'm still talking to Green.",
+          "next": "end",
+          "outcome": "partial",
+          "stat_effects": { "respect": 5 }
+        }
+      ]
+    },
+    "insult_fight": {
+      "speaker": "Uncle Fadez",
+      "text": "RIGHT! THAT'S IT! Boys! Get the hot towels! The SCALDING ones! Nobody disrespects the Trim Kings! My cousin's cousin trained in COMBAT BARBERING!",
+      "options": [
+        {
+          "text": "[FIGHT] Combat barbering? I've got to see this.",
+          "next": "end",
+          "outcome": "fight",
+          "stat_effects": { "respect": 20 }
+        },
+        {
+          "text": "[RUN] I suddenly have an appointment literally anywhere else.",
+          "next": "end",
+          "outcome": "fled",
+          "stat_effects": { "respect": -10 }
+        }
+      ]
+    },
+    "leave_trim": {
+      "speaker": "Uncle Fadez",
+      "text": "Go then! But remember — the Trim Kings never forget a face! Especially when we've SHAPED it! RD4 for life, cuz!",
+      "options": [
+        {
+          "text": "Noted.",
+          "next": "end",
+          "outcome": "success"
+        }
+      ]
+    }
+  }
+}

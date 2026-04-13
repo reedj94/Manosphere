@@ -32,6 +32,8 @@ SaveManager="*res://scripts/core/save_manager.gd"
 ScammagramManager="*res://scripts/ui/scammagram_manager.gd"
 AudioManager="*res://scripts/core/audio_manager.gd"
 MultiplayerManager="*res://scripts/multiplayer/multiplayer_manager.gd"
+FactionManager="*res://scripts/core/faction_manager.gd"
+POIRegistry="*res://scripts/core/poi_registry.gd"
 
 [display]
 

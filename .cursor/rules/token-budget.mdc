@@ -1,0 +1,29 @@
+---
+description: Always applied — controls agent/subagent usage to protect token budget
+globs: 
+alwaysApply: true
+---
+
+# Token Budget Rules
+
+This project runs on a limited token budget. Follow these rules to avoid waste.
+
+## Agent Usage
+- **Review mode: solo** — do NOT auto-spawn code-reviewer or security-reviewer agents unless explicitly asked
+- Only use `Task` subagents when the work genuinely requires parallel exploration or specialist knowledge
+- Prefer doing work directly over delegating to subagents for tasks under ~50 lines of change
+- When a subagent IS needed, prefer `model: fast` unless deep reasoning is required
+
+## Efficiency
+- Read files before editing — never guess at file contents
+- Batch related edits into single tool calls where possible
+- Don't re-read files you've already read in this session unless they've changed
+- Validate with headless Godot (`--quit-after 3`) instead of spinning up full editor sessions
+- Keep commit messages concise — no multi-paragraph descriptions
+
+## What NOT to Auto-Run
+- No automatic code reviews after every change
+- No automatic security scans
+- No automatic documentation generation
+- No automatic test generation (until test framework is set up)
+- Ask before running expensive operations (full codebase search, multi-agent workflows)

@@ -1,0 +1,22 @@
+---
+description: Enforced when editing dialogue system or dialogue JSON
+globs: game/scripts/dialogue/**/*.gd,game/data/dialogue/**/*.json
+---
+
+# Dialogue System Rules
+
+## GDScript
+- All dialogue loaded from JSON files under `res://data/dialogue/`
+- NPC personality types must be from the `NpcPersonality` enum
+- Stat checks must respect MarketMood modifier
+- Every dialogue outcome must emit `dialogue_ended` with the NPC id and outcome string
+
+## JSON Dialogue Files
+- Required top-level keys: `npc_id`, `quest_id`, `start_node`, `nodes`
+- Every node needs: `speaker`, `text`, `options` array
+- Options need at minimum: `text`, `next` (node id or "end")
+- Stat effects go in `stat_effects` dict with valid stat names only
+- `mood_variants` optional per node (keys: "crash", "boom", "stable")
+- `karma` values: positive = ethical choice, negative = exploitative
+- Fight outcomes use `"outcome": "fight"`, flee uses `"outcome": "fled"`
+- Faction encounters must include `faction_id` at the top level

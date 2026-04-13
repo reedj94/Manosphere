@@ -1,0 +1,17 @@
+---
+description: Enforced when editing player controller scripts
+globs: game/scripts/player/**/*.gd
+---
+
+# Player Controller Rules
+
+## Requirements
+- Player must extend `CharacterBody3D`
+- Use `_physics_process()` for movement, never `_process()`
+- Mouse look sensitivity as a constant, not magic number
+- All input actions must reference named actions from project.godot `[input]` section
+- Camera pitch clamped to ±88 degrees
+- Sprint multiplier as constant, not inline
+- Gravity via `get_gravity()`, never hardcoded
+- `move_and_slide()` called exactly once per physics frame
+- Scene transitions via `get_tree().change_scene_to_file()` with constant paths
