@@ -3,546 +3,572 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Manosphere — Map Editor</title>
+<title>Manosphere — Map Editor v2</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#1a1a2e;color:#e0e0e0;display:flex;height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:#0a0a18}::-webkit-scrollbar-thumb{background:#0f3460;border-radius:3px}
 
-#sidebar{width:300px;background:#16213e;padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;border-right:1px solid #0f3460}
-#sidebar h2{font-size:14px;color:#7ec8e3;text-transform:uppercase;letter-spacing:1px;margin:8px 0 4px}
-.palette-item{padding:8px 10px;background:#0f3460;border:1px solid #1a1a4e;border-radius:4px;cursor:grab;font-size:13px;display:flex;align-items:center;gap:8px}
-.palette-item:hover{background:#1a3a6e;border-color:#7ec8e3}
-.palette-swatch{width:16px;height:16px;border-radius:2px;flex-shrink:0}
+#sidebar{width:280px;background:#16213e;overflow-y:auto;display:flex;flex-direction:column;border-right:1px solid #0f3460}
+.tab-bar{display:flex;border-bottom:1px solid #0f3460}
+.tab-btn{flex:1;padding:8px 4px;background:none;border:none;color:#607090;font-size:11px;cursor:pointer;text-transform:uppercase;letter-spacing:0.5px}
+.tab-btn.active{color:#7ec8e3;border-bottom:2px solid #7ec8e3}
+.tab-content{display:none;padding:8px;flex-direction:column;gap:4px}
+.tab-content.active{display:flex}
+.cat-label{font-size:11px;color:#4a6080;text-transform:uppercase;letter-spacing:1px;margin:8px 0 2px;padding:0 4px}
+.pi{padding:6px 8px;background:#0f3460;border:1px solid #1a1a4e;border-radius:3px;cursor:grab;font-size:12px;display:flex;align-items:center;gap:6px}
+.pi:hover{background:#1a3a6e;border-color:#7ec8e3}
+.sw{width:14px;height:14px;border-radius:2px;flex-shrink:0}
 
 #canvas-wrap{flex:1;position:relative;overflow:hidden;background:#0a0a1a}
-canvas{display:block}
+canvas{display:block;cursor:crosshair}
 
-#props-panel{width:320px;background:#16213e;padding:12px;overflow-y:auto;border-left:1px solid #0f3460;display:none;flex-direction:column;gap:6px}
-#props-panel.active{display:flex}
-#props-panel h2{font-size:14px;color:#7ec8e3;text-transform:uppercase;letter-spacing:1px;margin:4px 0}
-#props-panel label{font-size:12px;color:#a0a0b0;display:block;margin-top:4px}
-#props-panel input,#props-panel select,#props-panel textarea{width:100%;padding:6px 8px;background:#0f3460;border:1px solid #1a1a4e;color:#e0e0e0;border-radius:3px;font-size:13px;font-family:inherit}
-#props-panel textarea{resize:vertical;min-height:50px}
-#props-panel input:focus,#props-panel select:focus{border-color:#7ec8e3;outline:none}
+#props{width:300px;background:#16213e;overflow-y:auto;border-left:1px solid #0f3460;display:none;flex-direction:column;gap:4px;padding:10px}
+#props.active{display:flex}
+#props h3{font-size:12px;color:#7ec8e3;text-transform:uppercase;letter-spacing:1px;margin:6px 0 2px}
+#props label{font-size:11px;color:#8090a0;display:block;margin-top:3px}
+#props input,#props select,#props textarea{width:100%;padding:5px 7px;background:#0f3460;border:1px solid #1a1a4e;color:#e0e0e0;border-radius:3px;font-size:12px;font-family:inherit}
+#props textarea{resize:vertical;min-height:40px}
+#props input:focus,#props select:focus{border-color:#7ec8e3;outline:none}
+.prop-row{display:flex;gap:4px}.prop-row>*{flex:1}
 
-#toolbar{position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:10}
-#toolbar button{padding:6px 14px;background:#0f3460;border:1px solid #1a1a4e;color:#e0e0e0;border-radius:4px;cursor:pointer;font-size:12px;font-family:inherit}
-#toolbar button:hover{background:#1a3a6e;border-color:#7ec8e3}
-#toolbar button.danger{border-color:#e74c3c}
-#toolbar button.danger:hover{background:#c0392b}
+#toolbar{position:absolute;top:8px;left:8px;display:flex;gap:4px;z-index:10;flex-wrap:wrap;max-width:600px}
+.tb{padding:5px 10px;background:#0f3460;border:1px solid #1a1a4e;color:#e0e0e0;border-radius:3px;cursor:pointer;font-size:11px;font-family:inherit}
+.tb:hover{background:#1a3a6e;border-color:#7ec8e3}
+.tb.danger{border-color:#e74c3c}.tb.danger:hover{background:#c0392b}
+.tb.active-tool{background:#1a5a3e;border-color:#00ff88}
 
-#status{position:absolute;bottom:10px;left:10px;font-size:11px;color:#606080;z-index:10}
-#region-select{position:absolute;top:10px;right:340px;z-index:10}
-#region-select select{padding:6px 10px;background:#0f3460;border:1px solid #1a1a4e;color:#e0e0e0;border-radius:4px;font-size:13px}
+#mode-bar{position:absolute;top:8px;right:320px;display:flex;gap:4px;z-index:10}
+#status{position:absolute;bottom:8px;left:8px;font-size:11px;color:#506080;z-index:10}
+#minimap{position:absolute;bottom:8px;right:320px;width:150px;height:150px;background:#0a0a18;border:1px solid #0f3460;z-index:10}
+
+.settings-row{display:flex;align-items:center;gap:6px;padding:4px 8px}
+.settings-row label{font-size:11px;color:#8090a0;white-space:nowrap;min-width:70px}
+.settings-row input{flex:1;padding:4px 6px;background:#0f3460;border:1px solid #1a1a4e;color:#e0e0e0;border-radius:3px;font-size:12px}
 </style>
 </head>
 <body>
 
 <div id="sidebar">
-  <h2>POI Palette</h2>
-  <div class="palette-item" draggable="true" data-type="SAFEHOUSE" data-color="#59473a" data-w="8" data-h="6" data-d="10">
-    <div class="palette-swatch" style="background:#59473a"></div>Safehouse (Man Cave)
-  </div>
-  <div class="palette-item" draggable="true" data-type="RECRUITMENT_SHOP" data-color="#857a6b" data-w="7" data-h="8" data-d="9">
-    <div class="palette-swatch" style="background:#857a6b"></div>Recruitment Shop
-  </div>
-  <div class="palette-item" draggable="true" data-type="SHOP" data-color="#73807a" data-w="7" data-h="7" data-d="8">
-    <div class="palette-swatch" style="background:#73807a"></div>Shop
-  </div>
-  <div class="palette-item" draggable="true" data-type="BOOKIES" data-color="#4d734d" data-w="9" data-h="7" data-d="10">
-    <div class="palette-swatch" style="background:#4d734d"></div>Bookies
-  </div>
-  <div class="palette-item" draggable="true" data-type="NIGHTCLUB" data-color="#261f33" data-w="14" data-h="9" data-d="12">
-    <div class="palette-swatch" style="background:#261f33"></div>Nightclub
-  </div>
-  <div class="palette-item" draggable="true" data-type="PARK" data-color="#475938" data-w="18" data-h="2" data-d="16">
-    <div class="palette-swatch" style="background:#475938"></div>Park
-  </div>
-  <div class="palette-item" draggable="true" data-type="VAPE_SHOP" data-color="#99d98c" data-w="6" data-h="8" data-d="8">
-    <div class="palette-swatch" style="background:#99d98c"></div>Vape Shop (Faction)
-  </div>
-  <div class="palette-item" draggable="true" data-type="BARBERS" data-color="#8cbfe6" data-w="7" data-h="7" data-d="9">
-    <div class="palette-swatch" style="background:#8cbfe6"></div>Barbers (Faction)
-  </div>
-  <div class="palette-item" draggable="true" data-type="FACTION_HQ" data-color="#d9bf4d" data-w="10" data-h="14" data-d="10">
-    <div class="palette-swatch" style="background:#d9bf4d"></div>Faction HQ
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('buildings')">Buildings</button>
+    <button class="tab-btn" onclick="showTab('roads')">Roads</button>
+    <button class="tab-btn" onclick="showTab('terrain')">Terrain</button>
+    <button class="tab-btn" onclick="showTab('props')">Props</button>
+    <button class="tab-btn" onclick="showTab('settings')">Map</button>
   </div>
 
-  <h2>Props</h2>
-  <div class="palette-item" draggable="true" data-type="PROP_LAMP" data-color="#40404a" data-w="0.3" data-h="5" data-d="0.3">
-    <div class="palette-swatch" style="background:#ffeab5"></div>Street Light
+  <div id="tab-buildings" class="tab-content active">
+    <div class="cat-label">POI Buildings</div>
+    <div class="pi" draggable="true" data-type="SAFEHOUSE" data-color="#59473a" data-w="8" data-h="6" data-d="10"><div class="sw" style="background:#59473a"></div>Safehouse</div>
+    <div class="pi" draggable="true" data-type="RECRUITMENT_SHOP" data-color="#857a6b" data-w="7" data-h="8" data-d="9"><div class="sw" style="background:#857a6b"></div>Recruitment Shop</div>
+    <div class="pi" draggable="true" data-type="SHOP" data-color="#73807a" data-w="7" data-h="7" data-d="8"><div class="sw" style="background:#73807a"></div>Shop</div>
+    <div class="pi" draggable="true" data-type="BOOKIES" data-color="#4d734d" data-w="9" data-h="7" data-d="10"><div class="sw" style="background:#4d734d"></div>Bookies</div>
+    <div class="pi" draggable="true" data-type="NIGHTCLUB" data-color="#261f33" data-w="14" data-h="9" data-d="12"><div class="sw" style="background:#261f33"></div>Nightclub</div>
+    <div class="pi" draggable="true" data-type="PARK" data-color="#475938" data-w="18" data-h="2" data-d="16"><div class="sw" style="background:#475938"></div>Park</div>
+    <div class="pi" draggable="true" data-type="VAPE_SHOP" data-color="#99d98c" data-w="6" data-h="8" data-d="8"><div class="sw" style="background:#99d98c"></div>Vape Shop</div>
+    <div class="pi" draggable="true" data-type="BARBERS" data-color="#8cbfe6" data-w="7" data-h="7" data-d="9"><div class="sw" style="background:#8cbfe6"></div>Barbers</div>
+    <div class="pi" draggable="true" data-type="FACTION_HQ" data-color="#d9bf4d" data-w="10" data-h="14" data-d="10"><div class="sw" style="background:#d9bf4d"></div>Faction HQ</div>
+    <div class="cat-label">Generic Buildings</div>
+    <div class="pi" draggable="true" data-type="BUILDING" data-color="#4a4a50" data-w="8" data-h="10" data-d="8"><div class="sw" style="background:#4a4a50"></div>Office Block</div>
+    <div class="pi" draggable="true" data-type="BUILDING" data-color="#5a4a3a" data-w="12" data-h="6" data-d="10"><div class="sw" style="background:#5a4a3a"></div>Warehouse</div>
+    <div class="pi" draggable="true" data-type="BUILDING" data-color="#606058" data-w="6" data-h="15" data-d="6"><div class="sw" style="background:#606058"></div>Tower Block</div>
+    <div class="pi" draggable="true" data-type="BUILDING" data-color="#504840" data-w="20" data-h="5" data-d="14"><div class="sw" style="background:#504840"></div>Terrace Row</div>
+    <div class="pi" draggable="true" data-type="BUILDING" data-color="#3a3a42" data-w="10" data-h="4" data-d="20"><div class="sw" style="background:#3a3a42"></div>Car Park</div>
+    <div class="pi" draggable="true" data-type="BUILDING" data-color="#554838" data-w="14" data-h="8" data-d="10"><div class="sw" style="background:#554838"></div>Church / Hall</div>
+    <div class="pi" draggable="true" data-type="BUILDING" data-color="#484850" data-w="16" data-h="6" data-d="12"><div class="sw" style="background:#484850"></div>Supermarket</div>
   </div>
-  <div class="palette-item" draggable="true" data-type="PROP_BENCH" data-color="#664d33" data-w="1.8" data-h="0.5" data-d="0.6">
-    <div class="palette-swatch" style="background:#664d33"></div>Bench
+
+  <div id="tab-roads" class="tab-content">
+    <div class="cat-label">Roads</div>
+    <div class="pi" draggable="true" data-type="ROAD" data-color="#2a2a2e" data-w="6" data-h="0.1" data-d="30"><div class="sw" style="background:#2a2a2e"></div>Road (Straight)</div>
+    <div class="pi" draggable="true" data-type="ROAD" data-color="#2a2a2e" data-w="30" data-h="0.1" data-d="6"><div class="sw" style="background:#2a2a2e"></div>Road (Cross)</div>
+    <div class="pi" draggable="true" data-type="ROAD" data-color="#2a2a2e" data-w="6" data-h="0.1" data-d="6"><div class="sw" style="background:#2a2a2e"></div>Junction</div>
+    <div class="pi" draggable="true" data-type="ROAD" data-color="#2a2a2e" data-w="10" data-h="0.1" data-d="10"><div class="sw" style="background:#2a2a2e"></div>Roundabout</div>
+    <div class="pi" draggable="true" data-type="PAVEMENT" data-color="#3a3a3e" data-w="2" data-h="0.15" data-d="30"><div class="sw" style="background:#3a3a3e"></div>Pavement</div>
+    <div class="pi" draggable="true" data-type="CROSSING" data-color="#e0e0e0" data-w="6" data-h="0.12" data-d="2"><div class="sw" style="background:#e0e0e0"></div>Zebra Crossing</div>
+    <div class="cat-label">Vehicles (parked)</div>
+    <div class="pi" draggable="true" data-type="VEHICLE_CAR" data-color="#5566aa" data-w="2" data-h="1.5" data-d="4.5"><div class="sw" style="background:#5566aa"></div>Car</div>
+    <div class="pi" draggable="true" data-type="VEHICLE_VAN" data-color="#e8e8e8" data-w="2.2" data-h="2.2" data-d="5.5"><div class="sw" style="background:#e8e8e8"></div>Van</div>
+    <div class="pi" draggable="true" data-type="VEHICLE_BUS" data-color="#cc3333" data-w="2.5" data-h="3" data-d="10"><div class="sw" style="background:#cc3333"></div>Bus</div>
+    <div class="pi" draggable="true" data-type="VEHICLE_TAXI" data-color="#e8d44d" data-w="2" data-h="1.5" data-d="4.5"><div class="sw" style="background:#e8d44d"></div>Taxi</div>
+    <div class="pi" draggable="true" data-type="VEHICLE_LAMBO" data-color="#ff6600" data-w="2" data-h="1.2" data-d="4.8"><div class="sw" style="background:#ff6600"></div>Lambo (flex)</div>
+    <div class="pi" draggable="true" data-type="VEHICLE_ROLLS" data-color="#d4af37" data-w="2.2" data-h="1.6" data-d="5.8"><div class="sw" style="background:#d4af37"></div>Gold Rolls Royce</div>
+    <div class="cat-label">Moving Traffic (routes)</div>
+    <div class="pi" draggable="true" data-type="TRAFFIC_ROUTE" data-color="#ffaa00" data-w="1" data-h="1" data-d="1"><div class="sw" style="background:#ffaa00"></div>Traffic Waypoint</div>
   </div>
-  <div class="palette-item" draggable="true" data-type="PROP_BIN" data-color="#333338" data-w="0.4" data-h="0.7" data-d="0.4">
-    <div class="palette-swatch" style="background:#333338"></div>Bin
+
+  <div id="tab-terrain" class="tab-content">
+    <div class="cat-label">Terrain Paint</div>
+    <div class="pi" onclick="setTool('terrain_raise')" style="cursor:pointer"><div class="sw" style="background:#6a8a5a"></div>Raise Terrain [+]</div>
+    <div class="pi" onclick="setTool('terrain_lower')" style="cursor:pointer"><div class="sw" style="background:#4a5a3a"></div>Lower Terrain [-]</div>
+    <div class="pi" onclick="setTool('terrain_flatten')" style="cursor:pointer"><div class="sw" style="background:#5a6a4a"></div>Flatten</div>
+    <div class="pi" onclick="setTool('terrain_smooth')" style="cursor:pointer"><div class="sw" style="background:#5a7a5a"></div>Smooth</div>
+    <div class="settings-row"><label>Brush Size</label><input id="brush-size" type="range" min="1" max="10" value="3"></div>
+    <div class="settings-row"><label>Strength</label><input id="brush-str" type="range" min="1" max="20" value="5"></div>
+    <div class="cat-label">Water</div>
+    <div class="pi" draggable="true" data-type="LAKE" data-color="#2a5a8a" data-w="20" data-h="0.3" data-d="16"><div class="sw" style="background:#2a5a8a"></div>Lake</div>
+    <div class="pi" draggable="true" data-type="POND" data-color="#3a6a9a" data-w="8" data-h="0.2" data-d="8"><div class="sw" style="background:#3a6a9a"></div>Pond</div>
+    <div class="pi" draggable="true" data-type="RIVER" data-color="#2a5a8a" data-w="4" data-h="0.25" data-d="40"><div class="sw" style="background:#2a5a8a"></div>River</div>
+    <div class="pi" draggable="true" data-type="STREAM" data-color="#4a7aaa" data-w="1.5" data-h="0.15" data-d="30"><div class="sw" style="background:#4a7aaa"></div>Stream</div>
+    <div class="cat-label">Ground Cover</div>
+    <div class="pi" draggable="true" data-type="GRASS_PATCH" data-color="#3a5a2a" data-w="12" data-h="0.05" data-d="12"><div class="sw" style="background:#3a5a2a"></div>Grass</div>
+    <div class="pi" draggable="true" data-type="MUD_PATCH" data-color="#5a4a30" data-w="8" data-h="0.05" data-d="8"><div class="sw" style="background:#5a4a30"></div>Mud</div>
+    <div class="pi" draggable="true" data-type="GRAVEL" data-color="#7a7a72" data-w="6" data-h="0.05" data-d="6"><div class="sw" style="background:#7a7a72"></div>Gravel</div>
+    <div class="pi" draggable="true" data-type="SAND" data-color="#c8b888" data-w="10" data-h="0.05" data-d="10"><div class="sw" style="background:#c8b888"></div>Sand</div>
   </div>
-  <div class="palette-item" draggable="true" data-type="SPAWN" data-color="#00ff88" data-w="1" data-h="2" data-d="1">
-    <div class="palette-swatch" style="background:#00ff88"></div>Player Spawn
+
+  <div id="tab-props" class="tab-content">
+    <div class="cat-label">Lighting</div>
+    <div class="pi" draggable="true" data-type="PROP_LAMP" data-color="#ffeab5" data-w="0.3" data-h="5" data-d="0.3"><div class="sw" style="background:#ffeab5"></div>Street Light</div>
+    <div class="pi" draggable="true" data-type="PROP_LAMP_DOUBLE" data-color="#ffeab5" data-w="0.3" data-h="6" data-d="0.3"><div class="sw" style="background:#ffeab5"></div>Double Light</div>
+    <div class="pi" draggable="true" data-type="PROP_BOLLARD_LIGHT" data-color="#aaaaaa" data-w="0.2" data-h="1" data-d="0.2"><div class="sw" style="background:#aaaaaa"></div>Bollard Light</div>
+    <div class="cat-label">Street Furniture</div>
+    <div class="pi" draggable="true" data-type="PROP_BENCH" data-color="#664d33" data-w="1.8" data-h="0.5" data-d="0.6"><div class="sw" style="background:#664d33"></div>Bench</div>
+    <div class="pi" draggable="true" data-type="PROP_BIN" data-color="#333338" data-w="0.4" data-h="0.7" data-d="0.4"><div class="sw" style="background:#333338"></div>Bin</div>
+    <div class="pi" draggable="true" data-type="PROP_BOLLARD" data-color="#555555" data-w="0.2" data-h="0.8" data-d="0.2"><div class="sw" style="background:#555555"></div>Bollard</div>
+    <div class="pi" draggable="true" data-type="PROP_POST_BOX" data-color="#cc2222" data-w="0.5" data-h="1.2" data-d="0.5"><div class="sw" style="background:#cc2222"></div>Post Box</div>
+    <div class="pi" draggable="true" data-type="PROP_PHONE_BOX" data-color="#cc2222" data-w="1" data-h="2.5" data-d="1"><div class="sw" style="background:#cc2222"></div>Phone Box</div>
+    <div class="pi" draggable="true" data-type="PROP_BUS_STOP" data-color="#4466aa" data-w="3" data-h="2.8" data-d="1.5"><div class="sw" style="background:#4466aa"></div>Bus Stop</div>
+    <div class="pi" draggable="true" data-type="PROP_SIGN_POST" data-color="#888888" data-w="0.15" data-h="3" data-d="0.15"><div class="sw" style="background:#888888"></div>Sign Post</div>
+    <div class="pi" draggable="true" data-type="PROP_TRAFFIC_LIGHT" data-color="#333333" data-w="0.3" data-h="3.5" data-d="0.3"><div class="sw" style="background:#22cc22"></div>Traffic Light</div>
+    <div class="pi" draggable="true" data-type="PROP_BARRIER" data-color="#ee8800" data-w="3" data-h="1" data-d="0.3"><div class="sw" style="background:#ee8800"></div>Barrier</div>
+    <div class="cat-label">Nature</div>
+    <div class="pi" draggable="true" data-type="PROP_TREE" data-color="#2a5a2a" data-w="2" data-h="6" data-d="2"><div class="sw" style="background:#2a5a2a"></div>Tree</div>
+    <div class="pi" draggable="true" data-type="PROP_TREE_DEAD" data-color="#5a4a3a" data-w="1.5" data-h="4" data-d="1.5"><div class="sw" style="background:#5a4a3a"></div>Dead Tree</div>
+    <div class="pi" draggable="true" data-type="PROP_BUSH" data-color="#3a6a3a" data-w="1.5" data-h="1" data-d="1.5"><div class="sw" style="background:#3a6a3a"></div>Bush</div>
+    <div class="pi" draggable="true" data-type="PROP_FLOWER_BED" data-color="#6a3a5a" data-w="3" data-h="0.3" data-d="1"><div class="sw" style="background:#6a3a5a"></div>Flower Bed</div>
+    <div class="pi" draggable="true" data-type="PROP_ROCK" data-color="#606060" data-w="1" data-h="0.6" data-d="1"><div class="sw" style="background:#606060"></div>Rock</div>
+    <div class="pi" draggable="true" data-type="PROP_HEDGE" data-color="#2a4a2a" data-w="0.6" data-h="1.2" data-d="6"><div class="sw" style="background:#2a4a2a"></div>Hedge</div>
+    <div class="pi" draggable="true" data-type="PROP_FENCE" data-color="#7a6a50" data-w="0.1" data-h="1.2" data-d="8"><div class="sw" style="background:#7a6a50"></div>Fence</div>
+    <div class="pi" draggable="true" data-type="PROP_WALL" data-color="#5a5a5a" data-w="0.3" data-h="2" data-d="10"><div class="sw" style="background:#5a5a5a"></div>Wall</div>
+    <div class="cat-label">Urban Debris</div>
+    <div class="pi" draggable="true" data-type="PROP_SKIP" data-color="#ccaa22" data-w="2" data-h="1.5" data-d="3"><div class="sw" style="background:#ccaa22"></div>Skip (dumpster)</div>
+    <div class="pi" draggable="true" data-type="PROP_WHEELIE_BIN" data-color="#224422" data-w="0.6" data-h="1" data-d="0.7"><div class="sw" style="background:#224422"></div>Wheelie Bin</div>
+    <div class="pi" draggable="true" data-type="PROP_SHOPPING_TROLLEY" data-color="#aaaaaa" data-w="0.6" data-h="0.9" data-d="0.9"><div class="sw" style="background:#aaaaaa"></div>Shopping Trolley</div>
+    <div class="pi" draggable="true" data-type="PROP_MATTRESS" data-color="#887766" data-w="1.4" data-h="0.2" data-d="2"><div class="sw" style="background:#887766"></div>Dumped Mattress</div>
+    <div class="cat-label">Play Equipment</div>
+    <div class="pi" draggable="true" data-type="PROP_CLIMBING_FRAME" data-color="#cc4444" data-w="3" data-h="2.5" data-d="3"><div class="sw" style="background:#cc4444"></div>Climbing Frame</div>
+    <div class="pi" draggable="true" data-type="PROP_SWING" data-color="#4488cc" data-w="3" data-h="2.5" data-d="1"><div class="sw" style="background:#4488cc"></div>Swings</div>
+    <div class="pi" draggable="true" data-type="PROP_SLIDE" data-color="#cc8844" data-w="1.5" data-h="2" data-d="4"><div class="sw" style="background:#cc8844"></div>Slide</div>
+    <div class="cat-label">Special</div>
+    <div class="pi" draggable="true" data-type="SPAWN" data-color="#00ff88" data-w="1" data-h="2" data-d="1"><div class="sw" style="background:#00ff88"></div>Player Spawn</div>
+    <div class="pi" draggable="true" data-type="NPC_SPAWN" data-color="#ff8800" data-w="1" data-h="2" data-d="1"><div class="sw" style="background:#ff8800"></div>NPC Spawn Point</div>
+    <div class="pi" draggable="true" data-type="TRIGGER_ZONE" data-color="#ff00ff44" data-w="6" data-h="3" data-d="6"><div class="sw" style="background:#ff00ff"></div>Trigger Zone</div>
+  </div>
+
+  <div id="tab-settings" class="tab-content">
+    <div class="cat-label">Map Size</div>
+    <div class="settings-row"><label>Width (X)</label><input id="map-w" type="number" value="140" min="50" max="1000" step="10" onchange="updateMapSize()"></div>
+    <div class="settings-row"><label>Depth (Z)</label><input id="map-d" type="number" value="140" min="50" max="1000" step="10" onchange="updateMapSize()"></div>
+    <div class="settings-row"><label>Grid Step</label><input id="grid-step" type="number" value="10" min="1" max="50" onchange="draw()"></div>
+    <div class="cat-label">Region</div>
+    <div class="settings-row">
+      <select id="region" style="width:100%;padding:6px" onchange="switchRegion(this.value)">
+        <option value="consett">Consett</option>
+        <option value="london">London</option>
+        <option value="miami">Miami</option>
+        <option value="dubai">Dubai</option>
+      </select>
+    </div>
+    <div class="cat-label">Ground Colour</div>
+    <div class="settings-row"><label>Base</label><input id="ground-color" type="color" value="#1a1c20" onchange="draw()"></div>
+    <div class="cat-label">Terrain Grid</div>
+    <div class="settings-row"><label>Resolution</label><input id="terrain-res" type="number" value="14" min="4" max="50" onchange="initTerrain()"></div>
+    <div class="settings-row"><label>Show Heights</label><input id="show-heights" type="checkbox" checked onchange="draw()"></div>
+    <div class="cat-label">Display</div>
+    <div class="settings-row"><label>Show Labels</label><input id="show-labels" type="checkbox" checked onchange="draw()"></div>
+    <div class="settings-row"><label>Show Grid</label><input id="show-grid" type="checkbox" checked onchange="draw()"></div>
+    <div class="settings-row"><label>Snap to Grid</label><input id="snap-grid" type="checkbox" checked></div>
   </div>
 </div>
 
 <div id="canvas-wrap">
   <div id="toolbar">
-    <button onclick="exportJSON()">Export JSON</button>
-    <button onclick="document.getElementById('import-file').click()">Import JSON</button>
-    <button onclick="exportForGodot()">Export for Godot</button>
-    <button class="danger" onclick="deleteSelected()">Delete Selected</button>
-    <button onclick="duplicateSelected()">Duplicate</button>
+    <button class="tb" onclick="setTool('select')">Select</button>
+    <button class="tb" onclick="exportJSON()">Export JSON</button>
+    <button class="tb" onclick="document.getElementById('import-file').click()">Import</button>
+    <button class="tb" onclick="exportForGodot()">Godot Export</button>
+    <button class="tb danger" onclick="deleteSelected()">Delete</button>
+    <button class="tb" onclick="duplicateSelected()">Duplicate</button>
+    <button class="tb" onclick="rotateSelected()">Rotate 90°</button>
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
   </div>
-  <div id="region-select">
-    <select id="region" onchange="switchRegion(this.value)">
-      <option value="consett">Consett</option>
-      <option value="london">London</option>
-      <option value="miami">Miami</option>
-      <option value="dubai">Dubai</option>
-    </select>
-  </div>
   <canvas id="canvas"></canvas>
-  <div id="status">Scroll to zoom · Drag canvas to pan · Drag palette items to place · Click to select</div>
+  <canvas id="minimap" width="150" height="150"></canvas>
+  <div id="status">Select tool active · Scroll=zoom · Right-drag=pan · Drag from sidebar to place</div>
 </div>
 
-<div id="props-panel">
-  <h2>Properties</h2>
+<div id="props">
+  <h3>Properties</h3>
   <label>ID</label><input id="p-id" onchange="updateProp('id',this.value)">
   <label>Display Name</label><input id="p-name" onchange="updateProp('display_name',this.value)">
   <label>Description</label><textarea id="p-desc" onchange="updateProp('description',this.value)"></textarea>
-  <label>Type</label><input id="p-type" readonly>
-  <label>Position X</label><input id="p-px" type="number" step="0.5" onchange="updateProp('px',+this.value)">
-  <label>Position Z</label><input id="p-pz" type="number" step="0.5" onchange="updateProp('pz',+this.value)">
-  <label>Width (X)</label><input id="p-w" type="number" step="0.5" min="1" onchange="updateProp('w',+this.value)">
-  <label>Height (Y)</label><input id="p-h" type="number" step="0.5" min="1" onchange="updateProp('h',+this.value)">
-  <label>Depth (Z)</label><input id="p-d" type="number" step="0.5" min="1" onchange="updateProp('d',+this.value)">
+  <label>Type</label><input id="p-type" readonly style="opacity:0.6">
+  <h3>Transform</h3>
+  <div class="prop-row">
+    <div><label>X</label><input id="p-px" type="number" step="0.5" onchange="updateProp('px',+this.value)"></div>
+    <div><label>Z</label><input id="p-pz" type="number" step="0.5" onchange="updateProp('pz',+this.value)"></div>
+  </div>
+  <div class="prop-row">
+    <div><label>Width</label><input id="p-w" type="number" step="0.5" min="0.1" onchange="updateProp('w',+this.value)"></div>
+    <div><label>Height</label><input id="p-h" type="number" step="0.5" min="0.1" onchange="updateProp('h',+this.value)"></div>
+    <div><label>Depth</label><input id="p-d" type="number" step="0.5" min="0.1" onchange="updateProp('d',+this.value)"></div>
+  </div>
+  <label>Rotation °</label><input id="p-rot" type="number" step="90" value="0" onchange="updateProp('rotation',+this.value)">
+  <h3>Appearance</h3>
   <label>Colour</label><input id="p-color" type="color" onchange="updateProp('color',this.value)">
+  <h3>Gameplay</h3>
   <label>Faction ID</label><input id="p-faction" onchange="updateProp('faction_id',this.value)">
-  <label>Open Hour</label><input id="p-open" type="number" min="0" max="23" onchange="updateProp('open_hour',+this.value)">
-  <label>Close Hour</label><input id="p-close" type="number" min="0" max="24" onchange="updateProp('close_hour',+this.value)">
+  <div class="prop-row">
+    <div><label>Open</label><input id="p-open" type="number" min="0" max="23" onchange="updateProp('open_hour',+this.value)"></div>
+    <div><label>Close</label><input id="p-close" type="number" min="0" max="24" onchange="updateProp('close_hour',+this.value)"></div>
+  </div>
 </div>
 
 <script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const WORLD = 140;
+const C=document.getElementById('canvas'),X=C.getContext('2d');
+const MC=document.getElementById('minimap'),MX=MC.getContext('2d');
+let W=140,D=140;
+let cam={x:0,y:0,z:4};
+let regions={consett:{items:[],terrain:null},london:{items:[],terrain:null},miami:{items:[],terrain:null},dubai:{items:[],terrain:null}};
+let R='consett',items=regions[R].items;
+let sel=null,drag=null,dOff={x:0,y:0},pan=false,panS={x:0,y:0};
+let idC=1,tool='select',painting=false;
 
-let cam = { x: 0, y: 0, zoom: 4 };
-let regions = { consett: [], london: [], miami: [], dubai: [] };
-let currentRegion = 'consett';
-let items = regions[currentRegion];
-let selected = null;
-let dragging = null;
-let dragOffset = { x: 0, y: 0 };
-let panning = false;
-let panStart = { x: 0, y: 0 };
-let idCounter = 1;
-
-function resize() {
-  const wrap = document.getElementById('canvas-wrap');
-  canvas.width = wrap.clientWidth;
-  canvas.height = wrap.clientHeight;
+function terrainRes(){return +(document.getElementById('terrain-res')?.value||14)}
+function initTerrain(){
+  const n=terrainRes();
+  for(const k in regions){
+    if(!regions[k].terrain||regions[k].terrain.length!==n){
+      regions[k].terrain=[];
+      for(let i=0;i<n;i++){regions[k].terrain[i]=[];for(let j=0;j<n;j++)regions[k].terrain[i][j]=0;}
+    }
+  }
   draw();
 }
-window.addEventListener('resize', resize);
 
-function worldToScreen(wx, wz) {
-  return {
-    x: (wx - cam.x) * cam.zoom + canvas.width / 2,
-    y: (wz - cam.y) * cam.zoom + canvas.height / 2
-  };
+function showTab(t){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b=>{if(b.textContent.toLowerCase()===t)b.classList.add('active');});
+  if(t==='terrain')setTool('terrain_raise');else if(tool.startsWith('terrain'))setTool('select');
 }
-function screenToWorld(sx, sy) {
-  return {
-    x: (sx - canvas.width / 2) / cam.zoom + cam.x,
-    z: (sy - canvas.height / 2) / cam.zoom + cam.y
-  };
+function setTool(t){tool=t;C.style.cursor=t.startsWith('terrain')?'crosshair':'default';
+  document.getElementById('status').textContent=t.startsWith('terrain')?'Click+drag to paint terrain · Scroll=zoom · Alt+drag=pan':
+    'Select tool · Scroll=zoom · Right-drag=pan · Drag from sidebar to place';
+}
+function updateMapSize(){W=+document.getElementById('map-w').value;D=+document.getElementById('map-d').value;initTerrain();draw();}
+function w2s(wx,wz){return{x:(wx-cam.x)*cam.z+C.width/2,y:(wz-cam.y)*cam.z+C.height/2}}
+function s2w(sx,sy){return{x:(sx-C.width/2)/cam.z+cam.x,z:(sy-C.height/2)/cam.z+cam.y}}
+function hexRgb(h){return[parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255]}
+function rgbHex(r,g,b){const t=v=>Math.round(v*255).toString(16).padStart(2,'0');return'#'+t(r)+t(g)+t(b)}
+
+function resize(){const wr=document.getElementById('canvas-wrap');C.width=wr.clientWidth;C.height=wr.clientHeight;draw();}
+window.addEventListener('resize',resize);
+
+function getTerrainAt(wx,wz){
+  const t=regions[R].terrain;if(!t)return 0;
+  const n=t.length,cx=(wx+W/2)/W*n,cz=(wz+D/2)/D*n;
+  const i=Math.floor(cx),j=Math.floor(cz);
+  if(i<0||i>=n||j<0||j>=n)return 0;
+  return t[i][j];
 }
 
-function hexToRgb(hex) {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  return [r, g, b];
-}
-function rgbToHex(r, g, b) {
-  const to = v => Math.round(v * 255).toString(16).padStart(2, '0');
-  return '#' + to(r) + to(g) + to(b);
+function paintTerrain(wx,wz){
+  const t=regions[R].terrain;if(!t)return;
+  const n=t.length,bs=+document.getElementById('brush-size').value,str=+document.getElementById('brush-str').value*0.1;
+  const ci=(wx+W/2)/W*n,cj=(wz+D/2)/D*n;
+  for(let i=Math.max(0,Math.floor(ci-bs));i<Math.min(n,Math.ceil(ci+bs));i++){
+    for(let j=Math.max(0,Math.floor(cj-bs));j<Math.min(n,Math.ceil(cj+bs));j++){
+      const dist=Math.sqrt((i-ci)**2+(j-cj)**2);
+      if(dist>bs)continue;
+      const falloff=1-dist/bs;
+      if(tool==='terrain_raise')t[i][j]+=str*falloff;
+      else if(tool==='terrain_lower')t[i][j]-=str*falloff;
+      else if(tool==='terrain_flatten')t[i][j]*=(1-0.3*falloff);
+      else if(tool==='terrain_smooth'){
+        let sum=0,cnt=0;
+        for(let di=-1;di<=1;di++)for(let dj=-1;dj<=1;dj++){
+          const ni=i+di,nj=j+dj;
+          if(ni>=0&&ni<n&&nj>=0&&nj<n){sum+=t[ni][nj];cnt++;}
+        }
+        t[i][j]+=(sum/cnt-t[i][j])*0.5*falloff;
+      }
+    }
+  }
 }
 
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+function draw(){
+  X.clearRect(0,0,C.width,C.height);
+  const gc=document.getElementById('ground-color')?.value||'#1a1c20';
+  const showH=document.getElementById('show-heights')?.checked;
+  const showL=document.getElementById('show-labels')?.checked;
+  const showG=document.getElementById('show-grid')?.checked;
 
-  // Ground plane
-  const tl = worldToScreen(-WORLD / 2, -WORLD / 2);
-  const br = worldToScreen(WORLD / 2, WORLD / 2);
-  ctx.fillStyle = '#1a1c20';
-  ctx.fillRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+  // Ground + terrain
+  const tl=w2s(-W/2,-D/2),br=w2s(W/2,D/2);
+  X.fillStyle=gc;X.fillRect(tl.x,tl.y,br.x-tl.x,br.y-tl.y);
+
+  const t=regions[R].terrain;
+  if(t&&showH){
+    const n=t.length,cw=(br.x-tl.x)/n,ch=(br.y-tl.y)/n;
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+      const h=t[i][j];if(Math.abs(h)<0.05)continue;
+      const r=h>0?Math.min(0.3+h*0.05,0.55):0.1;
+      const g=h>0?Math.min(0.4+h*0.06,0.65):0.12;
+      const b=h>0?0.15:Math.min(0.2+Math.abs(h)*0.08,0.6);
+      X.fillStyle=`rgba(${r*255|0},${g*255|0},${b*255|0},0.6)`;
+      X.fillRect(tl.x+i*cw,tl.y+j*ch,cw+1,ch+1);
+    }
+  }
 
   // Grid
-  ctx.strokeStyle = '#252830';
-  ctx.lineWidth = 1;
-  const gridStep = 10;
-  for (let g = -WORLD / 2; g <= WORLD / 2; g += gridStep) {
-    const a = worldToScreen(g, -WORLD / 2);
-    const b = worldToScreen(g, WORLD / 2);
-    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-    const c = worldToScreen(-WORLD / 2, g);
-    const d = worldToScreen(WORLD / 2, g);
-    ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(d.x, d.y); ctx.stroke();
+  if(showG){
+    const gs=+(document.getElementById('grid-step')?.value||10);
+    X.strokeStyle='#252830';X.lineWidth=1;
+    for(let g=-W/2;g<=W/2;g+=gs){const a=w2s(g,-D/2),b=w2s(g,D/2);X.beginPath();X.moveTo(a.x,a.y);X.lineTo(b.x,b.y);X.stroke();}
+    for(let g=-D/2;g<=D/2;g+=gs){const a=w2s(-W/2,g),b=w2s(W/2,g);X.beginPath();X.moveTo(a.x,a.y);X.lineTo(b.x,b.y);X.stroke();}
   }
 
-  // Origin cross
-  const o = worldToScreen(0, 0);
-  ctx.strokeStyle = '#404060';
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(o.x - 10, o.y); ctx.lineTo(o.x + 10, o.y); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(o.x, o.y - 10); ctx.lineTo(o.x, o.y + 10); ctx.stroke();
+  // Origin
+  const o=w2s(0,0);X.strokeStyle='#404060';X.lineWidth=1;
+  X.beginPath();X.moveTo(o.x-10,o.y);X.lineTo(o.x+10,o.y);X.stroke();
+  X.beginPath();X.moveTo(o.x,o.y-10);X.lineTo(o.x,o.y+10);X.stroke();
 
-  // Items
-  for (const item of items) {
-    const pos = worldToScreen(item.px - item.w / 2, item.pz - item.d / 2);
-    const sz = { x: item.w * cam.zoom, y: item.d * cam.zoom };
+  // Items (sorted: terrain/roads first, then buildings, then props on top)
+  const sorted=[...items].sort((a,b)=>{
+    const order=t=>{if(t.startsWith('ROAD')||t==='PAVEMENT'||t==='CROSSING')return 0;if(t.startsWith('GRASS')||t.startsWith('MUD')||t.startsWith('SAND')||t.startsWith('GRAVEL')||t==='LAKE'||t==='POND'||t==='RIVER'||t==='STREAM')return 1;if(t.startsWith('PROP_')||t==='SPAWN'||t==='NPC_SPAWN'||t==='TRIGGER_ZONE'||t.startsWith('VEHICLE')||t==='TRAFFIC_ROUTE')return 3;return 2;};
+    return order(a.type)-order(b.type);
+  });
 
-    ctx.fillStyle = item.color;
-    ctx.globalAlpha = item === selected ? 0.9 : 0.7;
-    ctx.fillRect(pos.x, pos.y, sz.x, sz.y);
-    ctx.globalAlpha = 1;
+  for(const it of sorted){
+    const rot=it.rotation||0;
+    const ew=rot%180===0?it.w:it.d, ed=rot%180===0?it.d:it.w;
+    const p=w2s(it.px-ew/2,it.pz-ed/2);
+    const sw=ew*cam.z,sh=ed*cam.z;
 
-    // Outline
-    ctx.strokeStyle = item === selected ? '#00ff88' : '#ffffff30';
-    ctx.lineWidth = item === selected ? 2 : 1;
-    ctx.strokeRect(pos.x, pos.y, sz.x, sz.y);
+    // Water shimmer
+    if(['LAKE','POND','RIVER','STREAM'].includes(it.type)){
+      X.fillStyle=it.color;X.globalAlpha=0.5;X.fillRect(p.x,p.y,sw,sh);X.globalAlpha=1;
+      X.strokeStyle='#4a8aba';X.lineWidth=1;X.setLineDash([4,4]);X.strokeRect(p.x,p.y,sw,sh);X.setLineDash([]);
+    }
+    // Roads
+    else if(it.type==='ROAD'||it.type==='PAVEMENT'||it.type==='CROSSING'){
+      X.fillStyle=it.color;X.globalAlpha=0.85;X.fillRect(p.x,p.y,sw,sh);X.globalAlpha=1;
+      if(it.type==='ROAD'){X.strokeStyle='#e0e0e0';X.lineWidth=1;X.setLineDash([6,8]);
+        if(sw>sh){X.beginPath();X.moveTo(p.x,p.y+sh/2);X.lineTo(p.x+sw,p.y+sh/2);X.stroke();}
+        else{X.beginPath();X.moveTo(p.x+sw/2,p.y);X.lineTo(p.x+sw/2,p.y+sh);X.stroke();}
+        X.setLineDash([]);
+      }
+      if(it.type==='CROSSING'){X.fillStyle='#ffffff';
+        const stripes=Math.floor(sw/(cam.z*0.8));
+        for(let s=0;s<stripes;s+=2){X.fillRect(p.x+s*sw/stripes,p.y,sw/stripes*0.8,sh);}
+      }
+    }
+    // Ground cover
+    else if(['GRASS_PATCH','MUD_PATCH','GRAVEL','SAND'].includes(it.type)){
+      X.fillStyle=it.color;X.globalAlpha=0.4;X.fillRect(p.x,p.y,sw,sh);X.globalAlpha=1;
+    }
+    // Vehicles
+    else if(it.type.startsWith('VEHICLE')){
+      X.fillStyle=it.color;X.globalAlpha=0.85;X.fillRect(p.x,p.y,sw,sh);X.globalAlpha=1;
+      X.strokeStyle='#00000040';X.lineWidth=1;X.strokeRect(p.x,p.y,sw,sh);
+      // Windscreen
+      X.fillStyle='#8ab8d8';
+      const ws=rot%180===0;
+      if(ws)X.fillRect(p.x+sw*0.15,p.y+sh*0.1,sw*0.7,sh*0.15);
+      else X.fillRect(p.x+sw*0.1,p.y+sh*0.15,sw*0.15,sh*0.7);
+    }
+    // Traffic waypoint
+    else if(it.type==='TRAFFIC_ROUTE'){
+      X.fillStyle='#ffaa00';X.beginPath();X.arc(p.x+sw/2,p.y+sh/2,Math.max(4,cam.z*0.5),0,Math.PI*2);X.fill();
+      X.strokeStyle='#ffaa00';X.lineWidth=1;X.beginPath();X.arc(p.x+sw/2,p.y+sh/2,Math.max(6,cam.z*0.8),0,Math.PI*2);X.stroke();
+    }
+    // Default block
+    else{
+      X.fillStyle=it.color;X.globalAlpha=it===sel?0.9:0.7;X.fillRect(p.x,p.y,sw,sh);X.globalAlpha=1;
+      // Height indicator
+      if(it.h>2&&showH){
+        const hBar=Math.min(it.h*0.8,sw*0.3);
+        X.fillStyle='#ffffff15';X.fillRect(p.x+sw-hBar-2,p.y+2,hBar,8);
+        X.fillStyle='#7ec8e3';X.fillRect(p.x+sw-hBar-2,p.y+2,hBar*(it.h/20),8);
+      }
+    }
+
+    // Selection
+    X.strokeStyle=it===sel?'#00ff88':'#ffffff18';X.lineWidth=it===sel?2:1;X.strokeRect(p.x,p.y,sw,sh);
 
     // Label
-    const fontSize = Math.max(9, Math.min(13, cam.zoom * 2.5));
-    ctx.font = `${fontSize}px 'Segoe UI', sans-serif`;
-    ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    const label = item.display_name || item.type;
-    const maxW = sz.x - 4;
-    if (maxW > 20) {
-      ctx.fillText(label, pos.x + sz.x / 2, pos.y + sz.y / 2, maxW);
+    if(showL&&sw>20){
+      const fs=Math.max(8,Math.min(12,cam.z*2.2));
+      X.font=`${fs}px 'Segoe UI',sans-serif`;X.fillStyle='#ffffffcc';X.textAlign='center';X.textBaseline='middle';
+      X.fillText(it.display_name||it.type,p.x+sw/2,p.y+sh/2,sw-4);
     }
-
-    // Type badge
-    if (item.type.startsWith('PROP_') || item.type === 'SPAWN') {
-      ctx.fillStyle = item.type === 'SPAWN' ? '#00ff88' : '#ffeab5';
-      ctx.beginPath();
-      ctx.arc(pos.x + sz.x / 2, pos.y + sz.y / 2, Math.max(3, cam.zoom * 0.4), 0, Math.PI * 2);
-      ctx.fill();
+    // Spawn/NPC dot
+    if(it.type==='SPAWN'||it.type==='NPC_SPAWN'){
+      X.fillStyle=it.type==='SPAWN'?'#00ff88':'#ff8800';
+      X.beginPath();X.arc(p.x+sw/2,p.y+sh/2,Math.max(4,cam.z*0.5),0,Math.PI*2);X.fill();
     }
   }
+
+  drawMinimap();
 }
 
-function hitTest(sx, sy) {
-  const w = screenToWorld(sx, sy);
-  for (let i = items.length - 1; i >= 0; i--) {
-    const it = items[i];
-    if (w.x >= it.px - it.w / 2 && w.x <= it.px + it.w / 2 &&
-        w.z >= it.pz - it.d / 2 && w.z <= it.pz + it.d / 2) {
-      return it;
-    }
+function drawMinimap(){
+  MX.clearRect(0,0,150,150);MX.fillStyle='#0a0a18';MX.fillRect(0,0,150,150);
+  const sx=150/W,sz=150/D;
+  for(const it of items){
+    const ew=(it.rotation||0)%180===0?it.w:it.d,ed=(it.rotation||0)%180===0?it.d:it.w;
+    MX.fillStyle=it.color;MX.globalAlpha=0.8;
+    MX.fillRect((it.px-ew/2+W/2)*sx,(it.pz-ed/2+D/2)*sz,ew*sx,ed*sz);
+  }
+  MX.globalAlpha=1;
+  // Viewport box
+  const vtl=s2w(0,0),vbr=s2w(C.width,C.height);
+  MX.strokeStyle='#7ec8e3';MX.lineWidth=1;
+  MX.strokeRect((vtl.x+W/2)*sx,(vtl.z+D/2)*sz,(vbr.x-vtl.x)*sx,(vbr.z-vtl.z)*sz);
+}
+
+function hitTest(sx,sy){
+  const w=s2w(sx,sy);
+  for(let i=items.length-1;i>=0;i--){
+    const it=items[i],rot=it.rotation||0;
+    const ew=rot%180===0?it.w:it.d,ed=rot%180===0?it.d:it.w;
+    if(w.x>=it.px-ew/2&&w.x<=it.px+ew/2&&w.z>=it.pz-ed/2&&w.z<=it.pz+ed/2)return it;
   }
   return null;
 }
 
-canvas.addEventListener('mousedown', e => {
-  if (e.button === 1 || (e.button === 0 && e.altKey)) {
-    panning = true;
-    panStart = { x: e.clientX, y: e.clientY };
-    canvas.style.cursor = 'grabbing';
-    return;
-  }
-  const rect = canvas.getBoundingClientRect();
-  const hit = hitTest(e.clientX - rect.left, e.clientY - rect.top);
-  if (hit) {
-    selected = hit;
-    dragging = hit;
-    const w = screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
-    dragOffset = { x: w.x - hit.px, y: w.z - hit.pz };
-    showProps(hit);
-  } else {
-    selected = null;
-    document.getElementById('props-panel').classList.remove('active');
-    panning = true;
-    panStart = { x: e.clientX, y: e.clientY };
-    canvas.style.cursor = 'grabbing';
-  }
+C.addEventListener('mousedown',e=>{
+  const rect=C.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  if(e.button===2||(e.button===0&&e.altKey)){pan=true;panS={x:e.clientX,y:e.clientY};C.style.cursor='grabbing';return;}
+  if(tool.startsWith('terrain')){painting=true;const w=s2w(mx,my);paintTerrain(w.x,w.z);draw();return;}
+  const hit=hitTest(mx,my);
+  if(hit){sel=hit;drag=hit;const w=s2w(mx,my);dOff={x:w.x-hit.px,y:w.z-hit.pz};showProps(hit);}
+  else{sel=null;document.getElementById('props').classList.remove('active');pan=true;panS={x:e.clientX,y:e.clientY};C.style.cursor='grabbing';}
   draw();
 });
-
-canvas.addEventListener('mousemove', e => {
-  if (panning) {
-    cam.x -= (e.clientX - panStart.x) / cam.zoom;
-    cam.y -= (e.clientY - panStart.y) / cam.zoom;
-    panStart = { x: e.clientX, y: e.clientY };
-    draw();
-    return;
-  }
-  if (dragging) {
-    const rect = canvas.getBoundingClientRect();
-    const w = screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
-    dragging.px = Math.round((w.x - dragOffset.x) * 2) / 2;
-    dragging.pz = Math.round((w.z - dragOffset.y) * 2) / 2;
-    if (selected === dragging) {
-      document.getElementById('p-px').value = dragging.px;
-      document.getElementById('p-pz').value = dragging.pz;
-    }
+C.addEventListener('mousemove',e=>{
+  if(pan){cam.x-=(e.clientX-panS.x)/cam.z;cam.y-=(e.clientY-panS.y)/cam.z;panS={x:e.clientX,y:e.clientY};draw();return;}
+  if(painting&&tool.startsWith('terrain')){const rect=C.getBoundingClientRect();const w=s2w(e.clientX-rect.left,e.clientY-rect.top);paintTerrain(w.x,w.z);draw();return;}
+  if(drag){
+    const rect=C.getBoundingClientRect(),w=s2w(e.clientX-rect.left,e.clientY-rect.top);
+    const snap=document.getElementById('snap-grid')?.checked;
+    const gs=+(document.getElementById('grid-step')?.value||10);
+    let nx=w.x-dOff.x,nz=w.z-dOff.y;
+    if(snap){nx=Math.round(nx/gs*2)*gs/2;nz=Math.round(nz/gs*2)*gs/2;}
+    else{nx=Math.round(nx*2)/2;nz=Math.round(nz*2)/2;}
+    drag.px=nx;drag.pz=nz;
+    if(sel===drag){document.getElementById('p-px').value=drag.px;document.getElementById('p-pz').value=drag.pz;}
     draw();
   }
 });
+C.addEventListener('mouseup',()=>{drag=null;pan=false;painting=false;C.style.cursor=tool.startsWith('terrain')?'crosshair':'default';});
+C.addEventListener('contextmenu',e=>e.preventDefault());
+C.addEventListener('wheel',e=>{e.preventDefault();const f=e.deltaY<0?1.15:0.87;cam.z=Math.max(0.3,Math.min(40,cam.z*f));draw();},{passive:false});
 
-canvas.addEventListener('mouseup', () => {
-  dragging = null;
-  panning = false;
-  canvas.style.cursor = 'default';
-});
-
-canvas.addEventListener('wheel', e => {
-  e.preventDefault();
-  const factor = e.deltaY < 0 ? 1.15 : 0.87;
-  cam.zoom = Math.max(0.5, Math.min(30, cam.zoom * factor));
-  draw();
-}, { passive: false });
-
-// Drag from palette
-document.querySelectorAll('.palette-item').forEach(el => {
-  el.addEventListener('dragstart', e => {
-    e.dataTransfer.setData('text/plain', JSON.stringify({
-      type: el.dataset.type,
-      color: el.dataset.color,
-      w: +el.dataset.w,
-      h: +el.dataset.h,
-      d: +el.dataset.d
-    }));
+document.querySelectorAll('.pi[draggable]').forEach(el=>{
+  el.addEventListener('dragstart',e=>{
+    e.dataTransfer.setData('text/plain',JSON.stringify({type:el.dataset.type,color:el.dataset.color,w:+el.dataset.w,h:+el.dataset.h,d:+el.dataset.d}));
   });
 });
-
-canvas.addEventListener('dragover', e => e.preventDefault());
-canvas.addEventListener('drop', e => {
-  e.preventDefault();
-  const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-  const rect = canvas.getBoundingClientRect();
-  const w = screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
-
-  const item = {
-    id: currentRegion + '_' + data.type.toLowerCase() + '_' + (idCounter++),
-    type: data.type,
-    display_name: data.type === 'SPAWN' ? 'Player Spawn' : '',
-    description: '',
-    px: Math.round(w.x * 2) / 2,
-    pz: Math.round(w.z * 2) / 2,
-    w: data.w,
-    h: data.h,
-    d: data.d,
-    color: data.color,
-    faction_id: '',
-    open_hour: 0,
-    close_hour: 24
-  };
-  items.push(item);
-  selected = item;
-  showProps(item);
-  draw();
+C.addEventListener('dragover',e=>e.preventDefault());
+C.addEventListener('drop',e=>{
+  e.preventDefault();const data=JSON.parse(e.dataTransfer.getData('text/plain'));
+  const rect=C.getBoundingClientRect(),w=s2w(e.clientX-rect.left,e.clientY-rect.top);
+  const snap=document.getElementById('snap-grid')?.checked;
+  const gs=+(document.getElementById('grid-step')?.value||10);
+  let px=w.x,pz=w.z;
+  if(snap){px=Math.round(px/gs*2)*gs/2;pz=Math.round(pz/gs*2)*gs/2;}
+  const it={id:R+'_'+data.type.toLowerCase()+'_'+(idC++),type:data.type,display_name:data.type==='SPAWN'?'Player Spawn':data.type==='NPC_SPAWN'?'NPC Spawn':'',
+    description:'',px,pz,w:data.w,h:data.h,d:data.d,color:data.color,faction_id:'',open_hour:0,close_hour:24,rotation:0};
+  items.push(it);sel=it;showProps(it);draw();
 });
 
-function showProps(item) {
-  const p = document.getElementById('props-panel');
-  p.classList.add('active');
-  document.getElementById('p-id').value = item.id;
-  document.getElementById('p-name').value = item.display_name;
-  document.getElementById('p-desc').value = item.description;
-  document.getElementById('p-type').value = item.type;
-  document.getElementById('p-px').value = item.px;
-  document.getElementById('p-pz').value = item.pz;
-  document.getElementById('p-w').value = item.w;
-  document.getElementById('p-h').value = item.h;
-  document.getElementById('p-d').value = item.d;
-  document.getElementById('p-color').value = item.color;
-  document.getElementById('p-faction').value = item.faction_id;
-  document.getElementById('p-open').value = item.open_hour;
-  document.getElementById('p-close').value = item.close_hour;
+function showProps(it){
+  const p=document.getElementById('props');p.classList.add('active');
+  document.getElementById('p-id').value=it.id;document.getElementById('p-name').value=it.display_name;
+  document.getElementById('p-desc').value=it.description;document.getElementById('p-type').value=it.type;
+  document.getElementById('p-px').value=it.px;document.getElementById('p-pz').value=it.pz;
+  document.getElementById('p-w').value=it.w;document.getElementById('p-h').value=it.h;document.getElementById('p-d').value=it.d;
+  document.getElementById('p-color').value=it.color;document.getElementById('p-faction').value=it.faction_id;
+  document.getElementById('p-open').value=it.open_hour;document.getElementById('p-close').value=it.close_hour;
+  document.getElementById('p-rot').value=it.rotation||0;
 }
+function updateProp(k,v){if(!sel)return;if(k==='px')sel.px=v;else if(k==='pz')sel.pz=v;else if(k==='w')sel.w=v;else if(k==='h')sel.h=v;else if(k==='d')sel.d=v;else if(k==='color')sel.color=v;else if(k==='open_hour')sel.open_hour=v;else if(k==='close_hour')sel.close_hour=v;else if(k==='rotation')sel.rotation=v;else sel[k]=v;draw();}
+function deleteSelected(){if(!sel)return;items.splice(items.indexOf(sel),1);sel=null;document.getElementById('props').classList.remove('active');draw();}
+function duplicateSelected(){if(!sel)return;const d=JSON.parse(JSON.stringify(sel));d.id+='_copy';d.px+=3;d.pz+=3;items.push(d);sel=d;showProps(d);draw();}
+function rotateSelected(){if(!sel)return;sel.rotation=((sel.rotation||0)+90)%360;document.getElementById('p-rot').value=sel.rotation;draw();}
+function switchRegion(r){R=r;items=regions[R].items;sel=null;document.getElementById('props').classList.remove('active');initTerrain();draw();}
 
-function updateProp(key, val) {
-  if (!selected) return;
-  if (key === 'px') selected.px = val;
-  else if (key === 'pz') selected.pz = val;
-  else if (key === 'w') selected.w = val;
-  else if (key === 'h') selected.h = val;
-  else if (key === 'd') selected.d = val;
-  else if (key === 'color') selected.color = val;
-  else if (key === 'open_hour') selected.open_hour = val;
-  else if (key === 'close_hour') selected.close_hour = val;
-  else selected[key] = val;
-  draw();
-}
-
-function deleteSelected() {
-  if (!selected) return;
-  items.splice(items.indexOf(selected), 1);
-  selected = null;
-  document.getElementById('props-panel').classList.remove('active');
-  draw();
-}
-
-function duplicateSelected() {
-  if (!selected) return;
-  const dup = JSON.parse(JSON.stringify(selected));
-  dup.id = dup.id + '_copy';
-  dup.px += 3;
-  dup.pz += 3;
-  items.push(dup);
-  selected = dup;
-  showProps(dup);
-  draw();
-}
-
-function switchRegion(r) {
-  currentRegion = r;
-  items = regions[r];
-  selected = null;
-  document.getElementById('props-panel').classList.remove('active');
-  draw();
-}
-
-function toExportFormat() {
-  const allRegions = {};
-  for (const [region, regionItems] of Object.entries(regions)) {
-    const pois = [];
-    const props = [];
-    let spawn = null;
-    for (const it of regionItems) {
-      if (it.type === 'SPAWN') {
-        spawn = { x: it.px, z: it.pz };
-      } else if (it.type.startsWith('PROP_')) {
-        props.push({
-          type: it.type,
-          position: [it.px, 0, it.pz],
-        });
-      } else {
-        const rgb = hexToRgb(it.color);
-        const poi = {
-          id: it.id,
-          type: it.type,
-          display_name: it.display_name,
-          description: it.description,
-          position: [it.px, 0, it.pz],
-          size: [it.w, it.h, it.d],
-          colour: [+rgb[0].toFixed(3), +rgb[1].toFixed(3), +rgb[2].toFixed(3)],
-          open_hours: [it.open_hour, it.close_hour]
-        };
-        if (it.faction_id) poi.faction_id = it.faction_id;
+function toExport(){
+  const all={};
+  for(const[r,rd]of Object.entries(regions)){
+    const pois=[],props=[],roads=[],terrain_data=[],vehicles=[],water=[];
+    let spawn=null;
+    for(const it of rd.items){
+      if(it.type==='SPAWN')spawn={x:it.px,z:it.pz};
+      else if(it.type==='NPC_SPAWN')props.push({type:it.type,position:[it.px,0,it.pz]});
+      else if(it.type==='TRIGGER_ZONE')props.push({type:it.type,position:[it.px,0,it.pz],size:[it.w,it.h,it.d]});
+      else if(it.type==='TRAFFIC_ROUTE')roads.push({type:'waypoint',position:[it.px,0,it.pz]});
+      else if(['ROAD','PAVEMENT','CROSSING'].includes(it.type))roads.push({type:it.type.toLowerCase(),position:[it.px,0,it.pz],size:[it.w,it.h,it.d],rotation:it.rotation||0});
+      else if(it.type.startsWith('VEHICLE'))vehicles.push({type:it.type.toLowerCase(),position:[it.px,0,it.pz],size:[it.w,it.h,it.d],colour:hexRgb(it.color).map(v=>+v.toFixed(3)),rotation:it.rotation||0});
+      else if(['LAKE','POND','RIVER','STREAM'].includes(it.type))water.push({type:it.type.toLowerCase(),position:[it.px,0,it.pz],size:[it.w,it.h,it.d],colour:hexRgb(it.color).map(v=>+v.toFixed(3))});
+      else if(['GRASS_PATCH','MUD_PATCH','GRAVEL','SAND'].includes(it.type))terrain_data.push({type:it.type.toLowerCase(),position:[it.px,0,it.pz],size:[it.w,it.h,it.d],colour:hexRgb(it.color).map(v=>+v.toFixed(3))});
+      else if(it.type.startsWith('PROP_'))props.push({type:it.type,position:[it.px,0,it.pz],size:[it.w,it.h,it.d],rotation:it.rotation||0});
+      else{
+        const rgb=hexRgb(it.color);
+        const poi={id:it.id,type:it.type,display_name:it.display_name,description:it.description,
+          position:[it.px,0,it.pz],size:[it.w,it.h,it.d],colour:rgb.map(v=>+v.toFixed(3)),open_hours:[it.open_hour,it.close_hour],rotation:it.rotation||0};
+        if(it.faction_id)poi.faction_id=it.faction_id;
         pois.push(poi);
       }
     }
-    if (pois.length > 0 || props.length > 0 || spawn) {
-      allRegions[region] = { pois, props, player_spawn: spawn };
-    }
+    const entry={map_size:[W,D],pois,props,roads,vehicles,water,ground_cover:terrain_data,player_spawn:spawn};
+    if(rd.terrain)entry.heightmap=rd.terrain;
+    all[r]=entry;
   }
-  return allRegions;
+  return all;
 }
+function exportJSON(){const d=toExport();const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='map_layout.json';a.click();}
+function exportForGodot(){const d=toExport();const b=new Blob([JSON.stringify(d,null,'\t')],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='map_layout_godot.json';a.click();}
 
-function exportJSON() {
-  const data = toExportFormat();
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'map_layout.json';
-  a.click();
-}
-
-function exportForGodot() {
-  const data = toExportFormat();
-  const blob = new Blob([JSON.stringify(data, null, '\t')], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'map_layout_godot.json';
-  a.click();
-}
-
-function importJSON(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    try {
-      const data = JSON.parse(ev.target.result);
-      for (const [region, rd] of Object.entries(data)) {
-        if (!regions[region]) regions[region] = [];
-        const arr = [];
-        if (rd.pois) {
-          for (const poi of rd.pois) {
-            arr.push({
-              id: poi.id,
-              type: poi.type,
-              display_name: poi.display_name || '',
-              description: poi.description || '',
-              px: poi.position[0],
-              pz: poi.position[2],
-              w: poi.size[0],
-              h: poi.size[1],
-              d: poi.size[2],
-              color: rgbToHex(poi.colour[0], poi.colour[1], poi.colour[2]),
-              faction_id: poi.faction_id || '',
-              open_hour: poi.open_hours ? poi.open_hours[0] : 0,
-              close_hour: poi.open_hours ? poi.open_hours[1] : 24,
-            });
-          }
-        }
-        if (rd.props) {
-          for (const p of rd.props) {
-            arr.push({
-              id: region + '_' + p.type.toLowerCase() + '_' + (idCounter++),
-              type: p.type,
-              display_name: '',
-              description: '',
-              px: p.position[0],
-              pz: p.position[2],
-              w: p.type === 'PROP_LAMP' ? 0.3 : p.type === 'PROP_BENCH' ? 1.8 : 0.4,
-              h: 1, d: 1,
-              color: '#404040',
-              faction_id: '',
-              open_hour: 0, close_hour: 24
-            });
-          }
-        }
-        if (rd.player_spawn) {
-          arr.push({
-            id: region + '_spawn',
-            type: 'SPAWN',
-            display_name: 'Player Spawn',
-            description: '',
-            px: rd.player_spawn.x,
-            pz: rd.player_spawn.z,
-            w: 1, h: 2, d: 1,
-            color: '#00ff88',
-            faction_id: '',
-            open_hour: 0, close_hour: 24
-          });
-        }
-        regions[region] = arr;
+function importJSON(e){
+  const f=e.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const data=JSON.parse(ev.target.result);
+      for(const[r,rd]of Object.entries(data)){
+        if(!regions[r])regions[r]={items:[],terrain:null};
+        const arr=[];
+        if(rd.map_size){W=rd.map_size[0];D=rd.map_size[1];document.getElementById('map-w').value=W;document.getElementById('map-d').value=D;}
+        if(rd.pois)for(const p of rd.pois)arr.push({id:p.id,type:p.type,display_name:p.display_name||'',description:p.description||'',px:p.position[0],pz:p.position[2],w:p.size[0],h:p.size[1],d:p.size[2],color:rgbHex(...p.colour),faction_id:p.faction_id||'',open_hour:p.open_hours?p.open_hours[0]:0,close_hour:p.open_hours?p.open_hours[1]:24,rotation:p.rotation||0});
+        if(rd.props)for(const p of rd.props)arr.push({id:r+'_'+p.type.toLowerCase()+'_'+(idC++),type:p.type,display_name:'',description:'',px:p.position[0],pz:p.position[2],w:p.size?p.size[0]:0.5,h:p.size?p.size[1]:1,d:p.size?p.size[2]:0.5,color:'#555555',faction_id:'',open_hour:0,close_hour:24,rotation:p.rotation||0});
+        if(rd.roads)for(const p of rd.roads)arr.push({id:r+'_road_'+(idC++),type:p.type==='waypoint'?'TRAFFIC_ROUTE':p.type.toUpperCase(),display_name:'',description:'',px:p.position[0],pz:p.position[2],w:p.size?p.size[0]:1,h:p.size?p.size[1]:0.1,d:p.size?p.size[2]:1,color:'#2a2a2e',faction_id:'',open_hour:0,close_hour:24,rotation:p.rotation||0});
+        if(rd.vehicles)for(const v of rd.vehicles)arr.push({id:r+'_'+v.type+'_'+(idC++),type:v.type.toUpperCase(),display_name:'',description:'',px:v.position[0],pz:v.position[2],w:v.size[0],h:v.size[1],d:v.size[2],color:rgbHex(...v.colour),faction_id:'',open_hour:0,close_hour:24,rotation:v.rotation||0});
+        if(rd.water)for(const w of rd.water)arr.push({id:r+'_'+w.type+'_'+(idC++),type:w.type.toUpperCase(),display_name:'',description:'',px:w.position[0],pz:w.position[2],w:w.size[0],h:w.size[1],d:w.size[2],color:rgbHex(...w.colour),faction_id:'',open_hour:0,close_hour:24,rotation:0});
+        if(rd.ground_cover)for(const g of rd.ground_cover)arr.push({id:r+'_'+g.type+'_'+(idC++),type:g.type.toUpperCase(),display_name:'',description:'',px:g.position[0],pz:g.position[2],w:g.size[0],h:g.size[1],d:g.size[2],color:rgbHex(...g.colour),faction_id:'',open_hour:0,close_hour:24,rotation:0});
+        if(rd.player_spawn)arr.push({id:r+'_spawn',type:'SPAWN',display_name:'Player Spawn',description:'',px:rd.player_spawn.x,pz:rd.player_spawn.z,w:1,h:2,d:1,color:'#00ff88',faction_id:'',open_hour:0,close_hour:24,rotation:0});
+        if(rd.heightmap)regions[r].terrain=rd.heightmap;
+        regions[r].items=arr;
       }
-      items = regions[currentRegion];
-      selected = null;
-      draw();
-    } catch (err) {
-      alert('Failed to parse JSON: ' + err.message);
-    }
+      items=regions[R].items;sel=null;initTerrain();draw();
+    }catch(err){alert('Import failed: '+err.message);}
   };
-  reader.readAsText(file);
-  e.target.value = '';
+  reader.readAsText(f);e.target.value='';
 }
 
-// Keyboard shortcuts
-document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if (e.key === 'Delete' || e.key === 'Backspace') deleteSelected();
-  if (e.key === 'd' && e.ctrlKey) { e.preventDefault(); duplicateSelected(); }
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;
+  if(e.key==='Delete'||e.key==='Backspace')deleteSelected();
+  if(e.key==='d'&&e.ctrlKey){e.preventDefault();duplicateSelected();}
+  if(e.key==='r')rotateSelected();
 });
 
-resize();
+initTerrain();resize();
 </script>
 </body>
 </html>
