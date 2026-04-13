@@ -1,0 +1,252 @@
+{
+  "characters": [
+    {
+      "id": "big_kaz",
+      "display_name": "Big Kaz",
+      "faction_id": "bazaar_brothers_consett",
+      "role": "faction_leader",
+      "region": "consett",
+      "base_model": "male_heavy",
+      "body": { "height": 1.1, "width": 1.3, "head_scale": 1.35, "arm_length": 1.0, "leg_length": 0.95 },
+      "face": {
+        "skin_tone": [0.65, 0.48, 0.32],
+        "beard": "full_thick",
+        "hair": "slicked_back",
+        "hair_colour": [0.08, 0.06, 0.04],
+        "brows": "thick_angry",
+        "eyes": "narrow",
+        "nose_size": 1.3,
+        "jaw_width": 1.2
+      },
+      "outfit": {
+        "top": "polo_shirt",
+        "top_colour": [0.15, 0.15, 0.15],
+        "bottom": "tracksuit_bottoms",
+        "bottom_colour": [0.12, 0.12, 0.15],
+        "shoes": "trainers_white",
+        "hat": "none",
+        "accessory": "gold_chain"
+      },
+      "personality_tags": ["aggressive", "businessman", "family_man", "loud"],
+      "voice_pitch": 0.85,
+      "walk_style": "swagger"
+    },
+    {
+      "id": "uncle_fadez",
+      "display_name": "Uncle Fadez",
+      "faction_id": "trim_kings_consett",
+      "role": "faction_leader",
+      "region": "consett",
+      "base_model": "male_slim",
+      "body": { "height": 0.95, "width": 0.9, "head_scale": 1.3, "arm_length": 1.05, "leg_length": 1.0 },
+      "face": {
+        "skin_tone": [0.6, 0.45, 0.3],
+        "beard": "designer_stubble",
+        "hair": "fade_sharp",
+        "hair_colour": [0.06, 0.05, 0.04],
+        "brows": "groomed",
+        "eyes": "wide_intense",
+        "nose_size": 1.0,
+        "jaw_width": 0.9
+      },
+      "outfit": {
+        "top": "barber_apron",
+        "top_colour": [0.2, 0.2, 0.22],
+        "bottom": "slim_jeans",
+        "bottom_colour": [0.1, 0.1, 0.12],
+        "shoes": "loafers_black",
+        "hat": "none",
+        "accessory": "clippers_holster"
+      },
+      "personality_tags": ["meticulous", "proud", "networker", "fast_talker"],
+      "voice_pitch": 1.05,
+      "walk_style": "strut"
+    },
+    {
+      "id": "tommy_bricks",
+      "display_name": "Tommy Bricks",
+      "faction_id": "the_firm_london",
+      "role": "faction_leader",
+      "region": "london",
+      "base_model": "male_heavy",
+      "body": { "height": 1.05, "width": 1.25, "head_scale": 1.25, "arm_length": 1.0, "leg_length": 0.95 },
+      "face": {
+        "skin_tone": [0.85, 0.7, 0.6],
+        "beard": "none",
+        "hair": "shaved_short",
+        "hair_colour": [0.4, 0.35, 0.3],
+        "brows": "thick_straight",
+        "eyes": "squint",
+        "nose_size": 1.4,
+        "jaw_width": 1.3
+      },
+      "outfit": {
+        "top": "camel_overcoat",
+        "top_colour": [0.7, 0.6, 0.45],
+        "bottom": "suit_trousers",
+        "bottom_colour": [0.15, 0.15, 0.18],
+        "shoes": "brogues_brown",
+        "hat": "flat_cap",
+        "accessory": "signet_ring"
+      },
+      "personality_tags": ["intimidating", "old_school", "property_obsessed", "cockney"],
+      "voice_pitch": 0.8,
+      "walk_style": "slow_power"
+    },
+    {
+      "id": "big_dex",
+      "display_name": "Big Dex",
+      "faction_id": "yard_mandem_london",
+      "role": "faction_leader",
+      "region": "london",
+      "base_model": "male_average",
+      "body": { "height": 1.15, "width": 1.1, "head_scale": 1.2, "arm_length": 1.05, "leg_length": 1.05 },
+      "face": {
+        "skin_tone": [0.35, 0.25, 0.18],
+        "beard": "goatee",
+        "hair": "dreads_short",
+        "hair_colour": [0.05, 0.04, 0.03],
+        "brows": "arched",
+        "eyes": "confident",
+        "nose_size": 1.1,
+        "jaw_width": 1.1
+      },
+      "outfit": {
+        "top": "puffer_jacket",
+        "top_colour": [0.08, 0.08, 0.1],
+        "bottom": "cargo_pants",
+        "bottom_colour": [0.12, 0.12, 0.12],
+        "shoes": "air_max_white",
+        "hat": "durag",
+        "accessory": "airpods"
+      },
+      "personality_tags": ["entrepreneur", "roadman", "franchise_builder", "charismatic"],
+      "voice_pitch": 0.9,
+      "walk_style": "bounce"
+    },
+    {
+      "id": "mama_sol",
+      "display_name": "Mama Sol",
+      "faction_id": "sol_coast_crew",
+      "role": "faction_leader",
+      "region": "miami",
+      "base_model": "female_average",
+      "body": { "height": 0.92, "width": 1.15, "head_scale": 1.2, "arm_length": 0.95, "leg_length": 0.9 },
+      "face": {
+        "skin_tone": [0.55, 0.38, 0.25],
+        "beard": "none",
+        "hair": "big_curls",
+        "hair_colour": [0.08, 0.05, 0.03],
+        "brows": "thin_arched",
+        "eyes": "fierce",
+        "nose_size": 1.0,
+        "jaw_width": 1.0
+      },
+      "outfit": {
+        "top": "floral_blouse",
+        "top_colour": [0.9, 0.4, 0.3],
+        "bottom": "pencil_skirt",
+        "bottom_colour": [0.15, 0.15, 0.15],
+        "shoes": "heels_red",
+        "hat": "none",
+        "accessory": "gold_earrings_large"
+      },
+      "personality_tags": ["matriarch", "fierce", "business_savvy", "family_first"],
+      "voice_pitch": 1.15,
+      "walk_style": "confident_heels"
+    },
+    {
+      "id": "captain_breeze",
+      "display_name": "Captain Breeze",
+      "faction_id": "ocean_drive_collective",
+      "role": "faction_leader",
+      "region": "miami",
+      "base_model": "male_slim",
+      "body": { "height": 1.08, "width": 1.0, "head_scale": 1.15, "arm_length": 1.1, "leg_length": 1.05 },
+      "face": {
+        "skin_tone": [0.4, 0.3, 0.22],
+        "beard": "thin_moustache",
+        "hair": "buzz_cut",
+        "hair_colour": [0.05, 0.05, 0.05],
+        "brows": "straight",
+        "eyes": "calm",
+        "nose_size": 1.1,
+        "jaw_width": 1.0
+      },
+      "outfit": {
+        "top": "linen_shirt_open",
+        "top_colour": [0.9, 0.88, 0.82],
+        "bottom": "cargo_shorts",
+        "bottom_colour": [0.5, 0.45, 0.35],
+        "shoes": "boat_shoes",
+        "hat": "captain_hat",
+        "accessory": "aviator_sunglasses"
+      },
+      "personality_tags": ["smooth", "connected", "ex_military", "philosophical"],
+      "voice_pitch": 0.95,
+      "walk_style": "casual_authority"
+    },
+    {
+      "id": "chad_sterling",
+      "display_name": "Chad Sterling",
+      "faction_id": "influencer_elite",
+      "role": "faction_leader",
+      "region": "dubai",
+      "base_model": "male_average",
+      "body": { "height": 1.1, "width": 1.0, "head_scale": 1.25, "arm_length": 1.0, "leg_length": 1.05 },
+      "face": {
+        "skin_tone": [0.88, 0.75, 0.65],
+        "beard": "stubble_perfect",
+        "hair": "curtains_floppy",
+        "hair_colour": [0.5, 0.4, 0.25],
+        "brows": "groomed_high",
+        "eyes": "smug",
+        "nose_size": 0.9,
+        "jaw_width": 1.1
+      },
+      "outfit": {
+        "top": "linen_blazer",
+        "top_colour": [0.92, 0.9, 0.85],
+        "bottom": "chinos_slim",
+        "bottom_colour": [0.8, 0.75, 0.65],
+        "shoes": "loafers_no_socks",
+        "hat": "none",
+        "accessory": "apple_watch_fake"
+      },
+      "personality_tags": ["entitled", "daddy_money", "influencer", "posh", "boarding_school"],
+      "voice_pitch": 1.1,
+      "walk_style": "media_strut"
+    },
+    {
+      "id": "sheikh_zayed_jr",
+      "display_name": "Sheikh Zayed Jr. (self-appointed)",
+      "faction_id": "golden_falcons",
+      "role": "faction_leader",
+      "region": "dubai",
+      "base_model": "male_heavy",
+      "body": { "height": 1.2, "width": 1.2, "head_scale": 1.3, "arm_length": 1.0, "leg_length": 1.0 },
+      "face": {
+        "skin_tone": [0.6, 0.45, 0.3],
+        "beard": "full_groomed",
+        "hair": "hidden_by_headwear",
+        "hair_colour": [0.06, 0.05, 0.04],
+        "brows": "thick_dramatic",
+        "eyes": "piercing",
+        "nose_size": 1.2,
+        "jaw_width": 1.15
+      },
+      "outfit": {
+        "top": "thobe_white",
+        "top_colour": [0.95, 0.95, 0.93],
+        "bottom": "thobe_lower",
+        "bottom_colour": [0.95, 0.95, 0.93],
+        "shoes": "sandals_gold",
+        "hat": "keffiyeh",
+        "accessory": "gold_rolex_real"
+      },
+      "personality_tags": ["oil_wealth", "falcon_owner", "dismissive", "buys_everything"],
+      "voice_pitch": 0.85,
+      "walk_style": "regal_slow"
+    }
+  ]
+}

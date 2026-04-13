@@ -1,0 +1,66 @@
+{
+  "characters": [
+    {
+      "id": "grotty_green",
+      "display_name": "Grotty Green",
+      "faction_id": "",
+      "role": "key_npc",
+      "region": "all",
+      "base_model": "female_athletic",
+      "body": { "height": 1.05, "width": 0.95, "head_scale": 1.15, "arm_length": 1.0, "leg_length": 1.05 },
+      "face": {
+        "skin_tone": [0.75, 0.6, 0.5],
+        "beard": "none",
+        "hair": "long_messy",
+        "hair_colour": [0.15, 0.35, 0.12],
+        "brows": "thin_raised",
+        "eyes": "mysterious",
+        "nose_size": 0.9,
+        "jaw_width": 0.85
+      },
+      "outfit": {
+        "top": "flowing_robe",
+        "top_colour": [0.2, 0.5, 0.25],
+        "bottom": "harem_pants",
+        "bottom_colour": [0.15, 0.4, 0.2],
+        "shoes": "barefoot",
+        "hat": "none",
+        "accessory": "crystal_pendant"
+      },
+      "personality_tags": ["enigmatic", "spiritual_fraud", "connected_to_all_factions", "manipulative"],
+      "voice_pitch": 1.1,
+      "walk_style": "glide"
+    },
+    {
+      "id": "the_real_one",
+      "display_name": "The Real One",
+      "faction_id": "",
+      "role": "love_interest",
+      "region": "all",
+      "base_model": "female_average",
+      "body": { "height": 1.0, "width": 0.9, "head_scale": 1.1, "arm_length": 1.0, "leg_length": 1.0 },
+      "face": {
+        "skin_tone": [0.8, 0.65, 0.55],
+        "beard": "none",
+        "hair": "shoulder_natural",
+        "hair_colour": [0.25, 0.18, 0.12],
+        "brows": "natural",
+        "eyes": "warm",
+        "nose_size": 1.0,
+        "jaw_width": 0.9
+      },
+      "outfit": {
+        "top": "simple_jumper",
+        "top_colour": [0.6, 0.55, 0.5],
+        "bottom": "jeans_regular",
+        "bottom_colour": [0.3, 0.35, 0.45],
+        "shoes": "trainers_plain",
+        "hat": "none",
+        "accessory": "tote_bag"
+      },
+      "personality_tags": ["grounded", "sarcastic", "sees_through_bs", "kind"],
+      "voice_pitch": 1.05,
+      "walk_style": "relaxed"
+    }
+  ]
+}

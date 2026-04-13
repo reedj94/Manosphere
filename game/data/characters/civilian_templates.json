@@ -1,0 +1,76 @@
+{
+  "templates": {
+    "consett": [
+      {
+        "id_prefix": "consett_civ",
+        "base_models": ["male_average", "male_heavy", "female_average"],
+        "tops": ["hoodie", "tracksuit_top", "hi_vis_vest", "fleece", "polo_cheap"],
+        "top_colours": [[0.3,0.3,0.35], [0.5,0.5,0.5], [0.8,0.7,0.1], [0.4,0.35,0.3], [0.2,0.2,0.25]],
+        "bottoms": ["tracksuit_bottoms", "jeans_baggy", "work_trousers"],
+        "bottom_colours": [[0.15,0.15,0.18], [0.3,0.35,0.4], [0.25,0.22,0.2]],
+        "shoes": ["trainers_scuffed", "work_boots", "sliders_socks"],
+        "hats": ["none", "flat_cap", "beanie", "baseball_cap"],
+        "accessories": ["none", "vape_pen", "carrier_bag", "earbuds_cheap"],
+        "hair_m": ["buzz_cut", "shaved", "messy_short", "receding"],
+        "hair_f": ["ponytail_tight", "messy_bun", "shoulder_straight"],
+        "beards": ["none", "patchy", "full_scruffy"],
+        "height_range": [0.9, 1.1],
+        "width_range": [0.85, 1.25]
+      }
+    ],
+    "london": [
+      {
+        "id_prefix": "london_civ",
+        "base_models": ["male_average", "male_slim", "female_average", "female_athletic"],
+        "tops": ["puffer_jacket", "suit_jacket", "hoodie_designer", "shirt_slim", "bomber_jacket"],
+        "top_colours": [[0.1,0.1,0.12], [0.2,0.2,0.25], [0.3,0.3,0.32], [0.9,0.9,0.92], [0.15,0.25,0.15]],
+        "bottoms": ["slim_jeans", "suit_trousers", "joggers_designer", "cargo_pants"],
+        "bottom_colours": [[0.1,0.1,0.12], [0.15,0.15,0.18], [0.2,0.2,0.22], [0.25,0.22,0.2]],
+        "shoes": ["air_max_white", "chelsea_boots", "loafers_black", "trainers_designer"],
+        "hats": ["none", "beanie_fitted", "bucket_hat", "durag"],
+        "accessories": ["airpods", "man_bag", "chain_silver", "phone_always_out"],
+        "hair_m": ["fade_sharp", "afro_short", "buzz_cut", "curtains"],
+        "hair_f": ["braids", "bob_sharp", "natural_short", "weave_long"],
+        "beards": ["none", "designer_stubble", "goatee"],
+        "height_range": [0.92, 1.15],
+        "width_range": [0.8, 1.15]
+      }
+    ],
+    "miami": [
+      {
+        "id_prefix": "miami_civ",
+        "base_models": ["male_average", "male_slim", "female_average", "female_athletic"],
+        "tops": ["tank_top", "hawaiian_shirt", "linen_shirt", "crop_top", "vest"],
+        "top_colours": [[0.9,0.9,0.88], [0.8,0.4,0.3], [0.85,0.8,0.7], [0.3,0.8,0.8], [0.95,0.6,0.3]],
+        "bottoms": ["shorts_board", "linen_pants", "denim_cutoffs", "yoga_pants"],
+        "bottom_colours": [[0.4,0.5,0.6], [0.85,0.8,0.7], [0.5,0.55,0.6], [0.1,0.1,0.12]],
+        "shoes": ["flip_flops", "boat_shoes", "sandals", "trainers_colourful"],
+        "hats": ["none", "snapback", "straw_hat", "visor"],
+        "accessories": ["sunglasses_aviator", "surfboard_wax_stain", "smoothie_cup", "gold_chain_thin"],
+        "hair_m": ["slicked_back", "man_bun", "buzz_bleached", "curly_top"],
+        "hair_f": ["beach_waves", "ponytail_high", "braids_coloured", "pixie_cut"],
+        "beards": ["none", "stubble_sun", "goatee_thin"],
+        "height_range": [0.95, 1.12],
+        "width_range": [0.85, 1.1]
+      }
+    ],
+    "dubai": [
+      {
+        "id_prefix": "dubai_civ",
+        "base_models": ["male_average", "male_slim", "female_average"],
+        "tops": ["thobe_white", "designer_tshirt", "linen_blazer", "athleisure_top", "polo_designer"],
+        "top_colours": [[0.95,0.95,0.93], [0.1,0.1,0.1], [0.85,0.82,0.75], [0.2,0.2,0.22], [0.9,0.85,0.7]],
+        "bottoms": ["thobe_lower", "chinos_designer", "gym_shorts_logo", "slim_trousers"],
+        "bottom_colours": [[0.95,0.95,0.93], [0.8,0.75,0.65], [0.15,0.15,0.18], [0.2,0.2,0.22]],
+        "shoes": ["sandals_gold", "loafers_gucci_fake", "trainers_limited_edition", "desert_boots"],
+        "hats": ["none", "keffiyeh", "designer_cap", "none"],
+        "accessories": ["gold_watch", "designer_sunglasses", "man_bag_louis", "phone_gold_case", "vape_expensive"],
+        "hair_m": ["hidden_by_headwear", "slicked_back", "fade_sharp", "gel_perfect"],
+        "hair_f": ["hijab", "long_sleek", "updo_formal"],
+        "beards": ["full_groomed", "designer_stubble", "none"],
+        "height_range": [0.95, 1.2],
+        "width_range": [0.85, 1.2]
+      }
+    ]
+  }
+}

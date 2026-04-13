@@ -1,0 +1,267 @@
+[gd_scene load_steps=2 format=3 uid="uid://char_creator_01"]
+
+[ext_resource type="Script" path="res://scripts/ui/character_creator.gd" id="1_script"]
+
+[node name="CharacterCreator" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.06, 0.08, 1)
+
+[node name="Title" type="Label" parent="."]
+layout_mode = 1
+offset_left = 0.0
+offset_top = 30.0
+offset_right = 1920.0
+offset_bottom = 80.0
+theme_override_colors/font_color = Color(0.93, 0.94, 0.96, 1)
+theme_override_font_sizes/font_size = 36
+text = "Create Your Character"
+horizontal_alignment = 1
+
+[node name="Panel" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -280.0
+offset_right = 300.0
+offset_bottom = 280.0
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="NameLabel" type="Label" parent="Panel/VBox"]
+layout_mode = 2
+text = "Your Name"
+horizontal_alignment = 1
+
+[node name="NameInput" type="LineEdit" parent="Panel/VBox"]
+layout_mode = 2
+placeholder_text = "Enter name..."
+alignment = 1
+
+[node name="Sections" type="TabContainer" parent="Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 320)
+
+[node name="Body" type="VBoxContainer" parent="Panel/VBox/Sections"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BaseRow" type="HBoxContainer" parent="Panel/VBox/Sections/Body"]
+layout_mode = 2
+
+[node name="BasePrev" type="Button" parent="Panel/VBox/Sections/Body/BaseRow"]
+layout_mode = 2
+text = "<"
+
+[node name="BaseLabel" type="Label" parent="Panel/VBox/Sections/Body/BaseRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Male Average"
+horizontal_alignment = 1
+
+[node name="BaseNext" type="Button" parent="Panel/VBox/Sections/Body/BaseRow"]
+layout_mode = 2
+text = ">"
+
+[node name="HeightLabel" type="Label" parent="Panel/VBox/Sections/Body"]
+layout_mode = 2
+text = "Height"
+
+[node name="HeightSlider" type="HSlider" parent="Panel/VBox/Sections/Body"]
+layout_mode = 2
+min_value = 0.7
+max_value = 1.4
+step = 0.01
+value = 1.0
+
+[node name="WidthLabel" type="Label" parent="Panel/VBox/Sections/Body"]
+layout_mode = 2
+text = "Width"
+
+[node name="WidthSlider" type="HSlider" parent="Panel/VBox/Sections/Body"]
+layout_mode = 2
+min_value = 0.7
+max_value = 1.5
+step = 0.01
+value = 1.0
+
+[node name="HeadLabel" type="Label" parent="Panel/VBox/Sections/Body"]
+layout_mode = 2
+text = "Head Size"
+
+[node name="HeadSlider" type="HSlider" parent="Panel/VBox/Sections/Body"]
+layout_mode = 2
+min_value = 0.8
+max_value = 1.8
+step = 0.01
+value = 1.1
+
+[node name="Face" type="VBoxContainer" parent="Panel/VBox/Sections"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SkinLabel" type="Label" parent="Panel/VBox/Sections/Face"]
+layout_mode = 2
+text = "Skin Tone"
+
+[node name="SkinPicker" type="ColorPickerButton" parent="Panel/VBox/Sections/Face"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+
+[node name="HairRow" type="HBoxContainer" parent="Panel/VBox/Sections/Face"]
+layout_mode = 2
+
+[node name="HairPrev" type="Button" parent="Panel/VBox/Sections/Face/HairRow"]
+layout_mode = 2
+text = "<"
+
+[node name="HairLabel" type="Label" parent="Panel/VBox/Sections/Face/HairRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Buzz Cut"
+horizontal_alignment = 1
+
+[node name="HairNext" type="Button" parent="Panel/VBox/Sections/Face/HairRow"]
+layout_mode = 2
+text = ">"
+
+[node name="HairColourLabel" type="Label" parent="Panel/VBox/Sections/Face"]
+layout_mode = 2
+text = "Hair Colour"
+
+[node name="HairColourPicker" type="ColorPickerButton" parent="Panel/VBox/Sections/Face"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+
+[node name="BeardRow" type="HBoxContainer" parent="Panel/VBox/Sections/Face"]
+layout_mode = 2
+
+[node name="BeardPrev" type="Button" parent="Panel/VBox/Sections/Face/BeardRow"]
+layout_mode = 2
+text = "<"
+
+[node name="BeardLabel" type="Label" parent="Panel/VBox/Sections/Face/BeardRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "None"
+horizontal_alignment = 1
+
+[node name="BeardNext" type="Button" parent="Panel/VBox/Sections/Face/BeardRow"]
+layout_mode = 2
+text = ">"
+
+[node name="Outfit" type="VBoxContainer" parent="Panel/VBox/Sections"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TopRow" type="HBoxContainer" parent="Panel/VBox/Sections/Outfit"]
+layout_mode = 2
+[node name="TopPrev" type="Button" parent="Panel/VBox/Sections/Outfit/TopRow"]
+layout_mode = 2
+text = "<"
+[node name="TopLabel" type="Label" parent="Panel/VBox/Sections/Outfit/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Hoodie"
+horizontal_alignment = 1
+[node name="TopNext" type="Button" parent="Panel/VBox/Sections/Outfit/TopRow"]
+layout_mode = 2
+text = ">"
+
+[node name="BottomRow" type="HBoxContainer" parent="Panel/VBox/Sections/Outfit"]
+layout_mode = 2
+[node name="BottomPrev" type="Button" parent="Panel/VBox/Sections/Outfit/BottomRow"]
+layout_mode = 2
+text = "<"
+[node name="BottomLabel" type="Label" parent="Panel/VBox/Sections/Outfit/BottomRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Tracksuit Bottoms"
+horizontal_alignment = 1
+[node name="BottomNext" type="Button" parent="Panel/VBox/Sections/Outfit/BottomRow"]
+layout_mode = 2
+text = ">"
+
+[node name="ShoesRow" type="HBoxContainer" parent="Panel/VBox/Sections/Outfit"]
+layout_mode = 2
+[node name="ShoesPrev" type="Button" parent="Panel/VBox/Sections/Outfit/ShoesRow"]
+layout_mode = 2
+text = "<"
+[node name="ShoesLabel" type="Label" parent="Panel/VBox/Sections/Outfit/ShoesRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Trainers White"
+horizontal_alignment = 1
+[node name="ShoesNext" type="Button" parent="Panel/VBox/Sections/Outfit/ShoesRow"]
+layout_mode = 2
+text = ">"
+
+[node name="HatRow" type="HBoxContainer" parent="Panel/VBox/Sections/Outfit"]
+layout_mode = 2
+[node name="HatPrev" type="Button" parent="Panel/VBox/Sections/Outfit/HatRow"]
+layout_mode = 2
+text = "<"
+[node name="HatLabel" type="Label" parent="Panel/VBox/Sections/Outfit/HatRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "None"
+horizontal_alignment = 1
+[node name="HatNext" type="Button" parent="Panel/VBox/Sections/Outfit/HatRow"]
+layout_mode = 2
+text = ">"
+
+[node name="AccRow" type="HBoxContainer" parent="Panel/VBox/Sections/Outfit"]
+layout_mode = 2
+[node name="AccPrev" type="Button" parent="Panel/VBox/Sections/Outfit/AccRow"]
+layout_mode = 2
+text = "<"
+[node name="AccLabel" type="Label" parent="Panel/VBox/Sections/Outfit/AccRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "None"
+horizontal_alignment = 1
+[node name="AccNext" type="Button" parent="Panel/VBox/Sections/Outfit/AccRow"]
+layout_mode = 2
+text = ">"
+
+[node name="RandomButton" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 40)
+text = "Randomise"
+
+[node name="ConfirmButton" type="Button" parent="Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 44)
+text = "Enter the Manosphere"
+
+[connection signal="pressed" from="Panel/VBox/Sections/Body/BaseRow/BasePrev" to="." method="_cycle_current" binds= [-1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Body/BaseRow/BaseNext" to="." method="_cycle_current" binds= [1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Face/HairRow/HairPrev" to="." method="cycle_hair" binds= [-1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Face/HairRow/HairNext" to="." method="cycle_hair" binds= [1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Face/BeardRow/BeardPrev" to="." method="cycle_beard" binds= [-1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Face/BeardRow/BeardNext" to="." method="cycle_beard" binds= [1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Outfit/TopRow/TopPrev" to="." method="cycle_top" binds= [-1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Outfit/TopRow/TopNext" to="." method="cycle_top" binds= [1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Outfit/BottomRow/BottomPrev" to="." method="cycle_bottom" binds= [-1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Outfit/BottomRow/BottomNext" to="." method="cycle_bottom" binds= [1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Outfit/ShoesRow/ShoesPrev" to="." method="cycle_shoes" binds= [-1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Outfit/ShoesRow/ShoesNext" to="." method="cycle_shoes" binds= [1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Outfit/HatRow/HatPrev" to="." method="cycle_hat" binds= [-1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Outfit/HatRow/HatNext" to="." method="cycle_hat" binds= [1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Outfit/AccRow/AccPrev" to="." method="cycle_acc" binds= [-1]]
+[connection signal="pressed" from="Panel/VBox/Sections/Outfit/AccRow/AccNext" to="." method="cycle_acc" binds= [1]]

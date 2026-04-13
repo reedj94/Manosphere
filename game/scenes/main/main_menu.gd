@@ -1,6 +1,7 @@
 extends Control
 
 const CONSETT_SCENE := "res://scenes/world/consett_blockout.tscn"
+const CHARACTER_CREATOR := "res://scenes/ui/character_creator.tscn"
 
 
 func _ready() -> void:
@@ -9,7 +10,10 @@ func _ready() -> void:
 
 
 func _on_play_pressed() -> void:
-	get_tree().change_scene_to_file(CONSETT_SCENE)
+	if GameState.player_appearance.is_empty():
+		get_tree().change_scene_to_file(CHARACTER_CREATOR)
+	else:
+		get_tree().change_scene_to_file(CONSETT_SCENE)
 
 
 func _on_quit_pressed() -> void:

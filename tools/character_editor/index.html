@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Manosphere — Character Designer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#1e1e2e;color:#cdd6f4;display:flex;height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#45475a;border-radius:3px}
+#sidebar{width:300px;background:#181825;overflow-y:auto;border-right:1px solid #313244;padding:8px;display:flex;flex-direction:column;gap:4px}
+.cat{font-size:10px;color:#585b70;text-transform:uppercase;letter-spacing:1px;margin:8px 0 2px}
+.sr{display:flex;align-items:center;gap:6px;padding:2px 0}
+.sr label{font-size:11px;color:#a6adc8;min-width:70px;white-space:nowrap}
+.sr input,.sr select{flex:1;padding:3px 5px;background:#1e1e2e;border:1px solid #313244;color:#cdd6f4;border-radius:3px;font-size:11px}
+.sr input[type=range]{padding:0}
+.sr input[type=color]{width:40px;height:22px;padding:0;cursor:pointer}
+#preview{flex:1;position:relative;background:#11111b}
+#toolbar{position:absolute;top:8px;left:8px;display:flex;gap:4px;z-index:10}
+.tb{padding:5px 12px;background:#1e1e2e;border:1px solid #313244;color:#cdd6f4;border-radius:3px;cursor:pointer;font-size:11px}
+.tb:hover{border-color:#89b4fa}
+.tb.accent{background:#89b4fa;color:#1e1e2e;border-color:#89b4fa}
+#info{position:absolute;bottom:8px;left:8px;font-size:10px;color:#585b70;z-index:10}
+#presets{display:flex;gap:3px;flex-wrap:wrap;padding:4px 0}
+.preset{padding:4px 8px;background:#313244;border:1px solid #45475a;border-radius:3px;cursor:pointer;font-size:10px;color:#cdd6f4}
+.preset:hover{border-color:#89b4fa}
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div style="font-size:14px;font-weight:bold;color:#89b4fa;padding:4px 0">Character Designer</div>
+
+  <div class="cat">Presets</div>
+  <div id="presets">
+    <div class="preset" onclick="loadPreset('big_kaz')">Big Kaz</div>
+    <div class="preset" onclick="loadPreset('uncle_fadez')">Uncle Fadez</div>
+    <div class="preset" onclick="loadPreset('tommy_bricks')">Tommy Bricks</div>
+    <div class="preset" onclick="loadPreset('big_dex')">Big Dex</div>
+    <div class="preset" onclick="loadPreset('mama_sol')">Mama Sol</div>
+    <div class="preset" onclick="loadPreset('captain_breeze')">Cpt. Breeze</div>
+    <div class="preset" onclick="loadPreset('chad_sterling')">Chad Sterling</div>
+    <div class="preset" onclick="loadPreset('sheikh_zayed_jr')">Sheikh Jr.</div>
+    <div class="preset" onclick="loadPreset('grotty_green')">Grotty Green</div>
+    <div class="preset" onclick="loadPreset('the_real_one')">The Real One</div>
+    <div class="preset" onclick="randomise()">Random</div>
+  </div>
+
+  <div class="cat">Identity</div>
+  <div class="sr"><label>ID</label><input id="c-id" value="new_character"></div>
+  <div class="sr"><label>Name</label><input id="c-name" value=""></div>
+  <div class="sr"><label>Role</label><select id="c-role"><option>faction_leader</option><option>civilian</option><option>key_npc</option><option>love_interest</option><option>boss</option><option>vendor</option></select></div>
+  <div class="sr"><label>Region</label><select id="c-region"><option>consett</option><option>london</option><option>miami</option><option>dubai</option><option>all</option></select></div>
+  <div class="sr"><label>Base Model</label><select id="c-base" onchange="rebuild()"><option>male_average</option><option>male_heavy</option><option>male_slim</option><option>female_average</option><option>female_athletic</option></select></div>
+
+  <div class="cat">Body</div>
+  <div class="sr"><label>Height</label><input id="b-height" type="range" min="0.7" max="1.4" step="0.01" value="1.0" oninput="rebuild()"><span id="v-height">1.0</span></div>
+  <div class="sr"><label>Width</label><input id="b-width" type="range" min="0.7" max="1.5" step="0.01" value="1.0" oninput="rebuild()"><span id="v-width">1.0</span></div>
+  <div class="sr"><label>Head Scale</label><input id="b-head" type="range" min="0.8" max="1.8" step="0.01" value="1.1" oninput="rebuild()"><span id="v-head">1.1</span></div>
+  <div class="sr"><label>Arm Length</label><input id="b-arm" type="range" min="0.8" max="1.2" step="0.01" value="1.0" oninput="rebuild()"><span id="v-arm">1.0</span></div>
+  <div class="sr"><label>Leg Length</label><input id="b-leg" type="range" min="0.8" max="1.2" step="0.01" value="1.0" oninput="rebuild()"><span id="v-leg">1.0</span></div>
+
+  <div class="cat">Face</div>
+  <div class="sr"><label>Skin</label><input id="f-skin" type="color" value="#c8a080" onchange="rebuild()"></div>
+  <div class="sr"><label>Hair</label><select id="f-hair" onchange="rebuild()"><option>buzz_cut</option><option>shaved</option><option>slicked_back</option><option>fade_sharp</option><option>messy_short</option><option>curtains</option><option>curtains_floppy</option><option>dreads_short</option><option>afro_short</option><option>man_bun</option><option>receding</option><option>hidden_by_headwear</option><option>ponytail_tight</option><option>messy_bun</option><option>shoulder_natural</option><option>big_curls</option><option>long_messy</option><option>beach_waves</option><option>braids</option><option>bob_sharp</option><option>long_sleek</option></select></div>
+  <div class="sr"><label>Hair Colour</label><input id="f-hairc" type="color" value="#1a1410" onchange="rebuild()"></div>
+  <div class="sr"><label>Beard</label><select id="f-beard" onchange="rebuild()"><option>none</option><option>stubble_perfect</option><option>designer_stubble</option><option>full_thick</option><option>full_groomed</option><option>goatee</option><option>thin_moustache</option><option>patchy</option><option>full_scruffy</option></select></div>
+  <div class="sr"><label>Nose Size</label><input id="f-nose" type="range" min="0.6" max="1.6" step="0.05" value="1.0" oninput="rebuild()"><span id="v-nose">1.0</span></div>
+  <div class="sr"><label>Jaw Width</label><input id="f-jaw" type="range" min="0.7" max="1.4" step="0.05" value="1.0" oninput="rebuild()"><span id="v-jaw">1.0</span></div>
+
+  <div class="cat">Outfit</div>
+  <div class="sr"><label>Top</label><select id="o-top" onchange="rebuild()"><option>polo_shirt</option><option>hoodie</option><option>tracksuit_top</option><option>hi_vis_vest</option><option>barber_apron</option><option>camel_overcoat</option><option>puffer_jacket</option><option>suit_jacket</option><option>linen_shirt_open</option><option>hawaiian_shirt</option><option>tank_top</option><option>linen_blazer</option><option>thobe_white</option><option>floral_blouse</option><option>flowing_robe</option><option>simple_jumper</option><option>fleece</option><option>crop_top</option></select></div>
+  <div class="sr"><label>Top Colour</label><input id="o-topc" type="color" value="#333338" onchange="rebuild()"></div>
+  <div class="sr"><label>Bottom</label><select id="o-bot" onchange="rebuild()"><option>tracksuit_bottoms</option><option>slim_jeans</option><option>suit_trousers</option><option>cargo_pants</option><option>cargo_shorts</option><option>chinos_slim</option><option>harem_pants</option><option>jeans_regular</option><option>pencil_skirt</option><option>thobe_lower</option><option>joggers_designer</option></select></div>
+  <div class="sr"><label>Bot Colour</label><input id="o-botc" type="color" value="#222228" onchange="rebuild()"></div>
+  <div class="sr"><label>Shoes</label><select id="o-shoes" onchange="rebuild()"><option>trainers_white</option><option>trainers_scuffed</option><option>loafers_black</option><option>loafers_no_socks</option><option>brogues_brown</option><option>chelsea_boots</option><option>heels_red</option><option>flip_flops</option><option>sandals_gold</option><option>air_max_white</option><option>work_boots</option><option>boat_shoes</option><option>barefoot</option></select></div>
+  <div class="sr"><label>Hat</label><select id="o-hat" onchange="rebuild()"><option>none</option><option>flat_cap</option><option>beanie</option><option>baseball_cap</option><option>durag</option><option>bucket_hat</option><option>captain_hat</option><option>keffiyeh</option><option>snapback</option><option>straw_hat</option></select></div>
+  <div class="sr"><label>Accessory</label><select id="o-acc" onchange="rebuild()"><option>none</option><option>gold_chain</option><option>clippers_holster</option><option>signet_ring</option><option>airpods</option><option>aviator_sunglasses</option><option>apple_watch_fake</option><option>gold_rolex_real</option><option>vape_pen</option><option>crystal_pendant</option><option>tote_bag</option><option>man_bag</option><option>gold_earrings_large</option></select></div>
+
+  <div class="cat">Personality</div>
+  <div class="sr"><label>Voice Pitch</label><input id="p-voice" type="range" min="0.6" max="1.4" step="0.05" value="1.0"><span id="v-voice">1.0</span></div>
+  <div class="sr"><label>Walk Style</label><select id="p-walk"><option>normal</option><option>swagger</option><option>strut</option><option>bounce</option><option>slow_power</option><option>confident_heels</option><option>casual_authority</option><option>media_strut</option><option>regal_slow</option><option>glide</option><option>relaxed</option></select></div>
+</div>
+
+<div id="preview">
+  <div id="toolbar">
+    <button class="tb accent" onclick="exportJSON()">Export JSON</button>
+    <button class="tb" onclick="document.getElementById('imp').click()">Import</button>
+    <button class="tb" onclick="randomise()">Randomise</button>
+    <button class="tb" onclick="saveToLocal()">Save</button>
+    <button class="tb" onclick="loadFromLocal()">Load</button>
+    <input type="file" id="imp" accept=".json" style="display:none" onchange="importJSON(event)">
+  </div>
+  <div id="info">Orbit: left-drag · Zoom: scroll · The 3D preview shows a simplified proxy of the character</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let scene,camera,renderer,controls,charGroup;
+
+function init(){
+  const wrap=$('preview');
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x11111b);
+  camera=new THREE.PerspectiveCamera(50,wrap.clientWidth/wrap.clientHeight,0.1,100);camera.position.set(0,1.5,4);
+  renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(wrap.clientWidth,wrap.clientHeight);renderer.setPixelRatio(devicePixelRatio);wrap.appendChild(renderer.domElement);
+  controls=new THREE.OrbitControls(camera,renderer.domElement);controls.target.set(0,1,0);controls.enableDamping=true;
+  scene.add(new THREE.AmbientLight(0x808098,0.8));
+  const sun=new THREE.DirectionalLight(0xffeedd,0.9);sun.position.set(3,5,4);scene.add(sun);
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(6,6),new THREE.MeshStandardMaterial({color:0x1e1e2e}));ground.rotation.x=-Math.PI/2;scene.add(ground);
+  charGroup=new THREE.Group();scene.add(charGroup);
+  rebuild();animate();
+  window.addEventListener('resize',()=>{renderer.setSize(wrap.clientWidth,wrap.clientHeight);camera.aspect=wrap.clientWidth/wrap.clientHeight;camera.updateProjectionMatrix();});
+}
+
+function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}
+
+function hexToC(h){return new THREE.Color(parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255);}
+function cToHex(r,g,b){const t=v=>Math.round(v*255).toString(16).padStart(2,'0');return'#'+t(r)+t(g)+t(b);}
+function arrToHex(a){return cToHex(a[0],a[1],a[2]);}
+function hexToArr(h){return[parseInt(h.slice(1,3),16)/255,parseInt(h.slice(3,5),16)/255,parseInt(h.slice(5,7),16)/255];}
+
+function rebuild(){
+  while(charGroup.children.length)charGroup.remove(charGroup.children[0]);
+  const h=+$('b-height').value, w=+$('b-width').value, hs=+$('b-head').value;
+  const al=+$('b-arm').value, ll=+$('b-leg').value;
+  const skin=hexToC($('f-skin').value);
+  const topC=hexToC($('o-topc').value), botC=hexToC($('o-botc').value);
+  const hairC=hexToC($('f-hairc').value);
+  const ns=+$('f-nose').value, jw=+$('f-jaw').value;
+
+  const base=$('c-base').value;
+  const isFemale=base.startsWith('female');
+  const isHeavy=base.includes('heavy');
+  const isSlim=base.includes('slim');
+  const bodyW=w*(isHeavy?1.15:isSlim?0.85:isFemale?0.88:1.0);
+
+  const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:0.85});
+
+  // Legs
+  const legH=0.45*h*ll;
+  const legW=0.15*bodyW;
+  const legGeo=new THREE.BoxGeometry(legW,legH,legW*0.9);
+  const lLeg=new THREE.Mesh(legGeo,mat(botC));lLeg.position.set(-legW*0.7,legH/2,0);charGroup.add(lLeg);
+  const rLeg=new THREE.Mesh(legGeo,mat(botC));rLeg.position.set(legW*0.7,legH/2,0);charGroup.add(rLeg);
+
+  // Shoes
+  const shoeGeo=new THREE.BoxGeometry(legW*1.1,0.08,legW*1.4);
+  const shoeMat=mat(new THREE.Color(0.2,0.2,0.22));
+  const lShoe=new THREE.Mesh(shoeGeo,shoeMat);lShoe.position.set(-legW*0.7,0.04,legW*0.15);charGroup.add(lShoe);
+  const rShoe=new THREE.Mesh(shoeGeo,shoeMat);rShoe.position.set(legW*0.7,0.04,legW*0.15);charGroup.add(rShoe);
+
+  // Torso
+  const torsoH=0.35*h;
+  const torsoW=0.35*bodyW;
+  const torsoD=0.2*bodyW;
+  const torsoY=legH+torsoH/2;
+  const torso=new THREE.Mesh(new THREE.BoxGeometry(torsoW,torsoH,torsoD),mat(topC));torso.position.y=torsoY;charGroup.add(torso);
+
+  // Arms
+  const armH=0.35*h*al;
+  const armW=0.09*bodyW;
+  const armGeo=new THREE.BoxGeometry(armW,armH,armW);
+  const lArm=new THREE.Mesh(armGeo,mat(topC));lArm.position.set(-torsoW/2-armW/2,torsoY,0);charGroup.add(lArm);
+  const rArm=new THREE.Mesh(armGeo,mat(topC));rArm.position.set(torsoW/2+armW/2,torsoY,0);charGroup.add(rArm);
+
+  // Hands
+  const handGeo=new THREE.BoxGeometry(armW*1.1,armW*1.1,armW*0.8);
+  const lHand=new THREE.Mesh(handGeo,mat(skin));lHand.position.set(-torsoW/2-armW/2,torsoY-armH/2-armW*0.5,0);charGroup.add(lHand);
+  const rHand=new THREE.Mesh(handGeo,mat(skin));rHand.position.set(torsoW/2+armW/2,torsoY-armH/2-armW*0.5,0);charGroup.add(rHand);
+
+  // Neck
+  const neckH=0.06*h;
+  const neck=new THREE.Mesh(new THREE.BoxGeometry(0.08*bodyW,neckH,0.08*bodyW),mat(skin));neck.position.y=torsoY+torsoH/2+neckH/2;charGroup.add(neck);
+
+  // Head
+  const headSize=0.22*hs;
+  const headY=torsoY+torsoH/2+neckH+headSize/2;
+  const head=new THREE.Mesh(new THREE.BoxGeometry(headSize*jw,headSize,headSize*0.9),mat(skin));head.position.y=headY;charGroup.add(head);
+
+  // Eyes
+  const eyeGeo=new THREE.BoxGeometry(headSize*0.12,headSize*0.06,0.02);
+  const eyeMat=mat(new THREE.Color(1,1,1));
+  const lEye=new THREE.Mesh(eyeGeo,eyeMat);lEye.position.set(-headSize*jw*0.2,headY+headSize*0.08,headSize*0.45);charGroup.add(lEye);
+  const rEye=new THREE.Mesh(eyeGeo,eyeMat);rEye.position.set(headSize*jw*0.2,headY+headSize*0.08,headSize*0.45);charGroup.add(rEye);
+  const pupilGeo=new THREE.BoxGeometry(headSize*0.05,headSize*0.05,0.02);
+  const pupilMat=mat(new THREE.Color(0.15,0.1,0.05));
+  const lPupil=new THREE.Mesh(pupilGeo,pupilMat);lPupil.position.set(-headSize*jw*0.2,headY+headSize*0.08,headSize*0.46);charGroup.add(lPupil);
+  const rPupil=new THREE.Mesh(pupilGeo,pupilMat);rPupil.position.set(headSize*jw*0.2,headY+headSize*0.08,headSize*0.46);charGroup.add(rPupil);
+
+  // Nose
+  const noseGeo=new THREE.BoxGeometry(headSize*0.08*ns,headSize*0.1*ns,headSize*0.12*ns);
+  const nose=new THREE.Mesh(noseGeo,mat(skin.clone().multiplyScalar(0.92)));nose.position.set(0,headY-headSize*0.02,headSize*0.48);charGroup.add(nose);
+
+  // Hair
+  const hairStyle=$('f-hair').value;
+  if(hairStyle!=='shaved'&&hairStyle!=='hidden_by_headwear'){
+    const isLong=hairStyle.includes('long')||hairStyle.includes('curls')||hairStyle.includes('braids')||hairStyle.includes('waves')||hairStyle.includes('shoulder')||hairStyle.includes('sleek');
+    const hairH=isLong?headSize*1.2:headSize*0.35;
+    const hairW=headSize*jw*(isLong?1.05:1.02);
+    const hairD=headSize*(isLong?1.1:0.6);
+    const hair=new THREE.Mesh(new THREE.BoxGeometry(hairW,hairH,hairD),mat(hairC));
+    hair.position.set(0,headY+headSize*0.15+(isLong?-hairH*0.2:0),isLong?-headSize*0.1:0);
+    charGroup.add(hair);
+  }
+
+  // Beard
+  const beard=$('f-beard').value;
+  if(beard!=='none'){
+    const bSize=beard.includes('full')?0.65:beard.includes('goatee')?0.35:0.25;
+    const bGeo=new THREE.BoxGeometry(headSize*jw*bSize,headSize*0.2,headSize*0.15);
+    const bMesh=new THREE.Mesh(bGeo,mat(hairC));bMesh.position.set(0,headY-headSize*0.25,headSize*0.35);charGroup.add(bMesh);
+  }
+
+  // Hat
+  const hat=$('o-hat').value;
+  if(hat!=='none'){
+    const hatC=hat==='keffiyeh'?new THREE.Color(0.95,0.95,0.93):hat==='flat_cap'?new THREE.Color(0.4,0.35,0.3):new THREE.Color(0.2,0.2,0.25);
+    const hatH=hat==='keffiyeh'?headSize*0.6:headSize*0.2;
+    const hatW=headSize*jw*(hat==='keffiyeh'?1.3:1.15);
+    const hatMesh=new THREE.Mesh(new THREE.BoxGeometry(hatW,hatH,headSize*(hat==='keffiyeh'?1.3:1.0)),mat(hatC));
+    hatMesh.position.set(0,headY+headSize/2+hatH/2,0);charGroup.add(hatMesh);
+    if(hat!=='keffiyeh'&&hat!=='beanie'){
+      const brim=new THREE.Mesh(new THREE.BoxGeometry(hatW*1.2,0.02,headSize*0.6),mat(hatC));
+      brim.position.set(0,headY+headSize/2+0.01,headSize*0.3);charGroup.add(brim);
+    }
+  }
+
+  // Update value displays
+  ['height','width','head','arm','leg','nose','jaw'].forEach(k=>{const el=$('v-'+k);if(el)el.textContent=(+$('b-'+k.replace('head','head').replace('nose','nose').replace('jaw','jaw')).value).toFixed(2);});
+  $('v-height').textContent=(+$('b-height').value).toFixed(2);
+  $('v-width').textContent=(+$('b-width').value).toFixed(2);
+  $('v-head').textContent=(+$('b-head').value).toFixed(2);
+  $('v-arm').textContent=(+$('b-arm').value).toFixed(2);
+  $('v-leg').textContent=(+$('b-leg').value).toFixed(2);
+  $('v-nose').textContent=(+$('f-nose').value).toFixed(2);
+  $('v-jaw').textContent=(+$('f-jaw').value).toFixed(2);
+  $('v-voice').textContent=(+$('p-voice').value).toFixed(2);
+}
+
+function getCharData(){
+  return{
+    id:$('c-id').value,display_name:$('c-name').value,
+    faction_id:'',role:$('c-role').value,region:$('c-region').value,
+    base_model:$('c-base').value,
+    body:{height:+$('b-height').value,width:+$('b-width').value,head_scale:+$('b-head').value,arm_length:+$('b-arm').value,leg_length:+$('b-leg').value},
+    face:{skin_tone:hexToArr($('f-skin').value),beard:$('f-beard').value,hair:$('f-hair').value,hair_colour:hexToArr($('f-hairc').value),brows:'natural',eyes:'neutral',nose_size:+$('f-nose').value,jaw_width:+$('f-jaw').value},
+    outfit:{top:$('o-top').value,top_colour:hexToArr($('o-topc').value),bottom:$('o-bot').value,bottom_colour:hexToArr($('o-botc').value),shoes:$('o-shoes').value,hat:$('o-hat').value,accessory:$('o-acc').value},
+    personality_tags:[],voice_pitch:+$('p-voice').value,walk_style:$('p-walk').value
+  };
+}
+
+function setCharData(c){
+  $('c-id').value=c.id||'';$('c-name').value=c.display_name||'';
+  $('c-role').value=c.role||'civilian';$('c-region').value=c.region||'consett';
+  $('c-base').value=c.base_model||'male_average';
+  if(c.body){$('b-height').value=c.body.height||1;$('b-width').value=c.body.width||1;$('b-head').value=c.body.head_scale||1.1;$('b-arm').value=c.body.arm_length||1;$('b-leg').value=c.body.leg_length||1;}
+  if(c.face){$('f-skin').value=arrToHex(c.face.skin_tone||[0.8,0.65,0.55]);$('f-beard').value=c.face.beard||'none';$('f-hair').value=c.face.hair||'buzz_cut';$('f-hairc').value=arrToHex(c.face.hair_colour||[0.1,0.08,0.06]);$('f-nose').value=c.face.nose_size||1;$('f-jaw').value=c.face.jaw_width||1;}
+  if(c.outfit){$('o-top').value=c.outfit.top||'polo_shirt';$('o-topc').value=arrToHex(c.outfit.top_colour||[0.3,0.3,0.3]);$('o-bot').value=c.outfit.bottom||'jeans_regular';$('o-botc').value=arrToHex(c.outfit.bottom_colour||[0.2,0.2,0.25]);$('o-shoes').value=c.outfit.shoes||'trainers_white';$('o-hat').value=c.outfit.hat||'none';$('o-acc').value=c.outfit.accessory||'none';}
+  $('p-voice').value=c.voice_pitch||1;$('p-walk').value=c.walk_style||'normal';
+  rebuild();
+}
+
+function exportJSON(){const d=getCharData();const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=d.id+'.json';a.click();}
+function importJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{setCharData(JSON.parse(ev.target.result));}catch(err){alert('Bad JSON: '+err.message);}};r.readAsText(f);e.target.value='';}
+function saveToLocal(){const d=getCharData();localStorage.setItem('mano_char_'+d.id,JSON.stringify(d));$('info').textContent='Saved: '+d.id;}
+function loadFromLocal(){const id=$('c-id').value;const s=localStorage.getItem('mano_char_'+id);if(s){setCharData(JSON.parse(s));$('info').textContent='Loaded: '+id;}else{$('info').textContent='No save found for: '+id;}}
+
+async function loadPreset(id){
+  const paths=['../../game/data/characters/faction_leaders.json','../../game/data/characters/key_npcs.json'];
+  for(const p of paths){
+    try{const r=await fetch(p);const d=await r.json();const chars=d.characters||[];const found=chars.find(c=>c.id===id);if(found){setCharData(found);$('info').textContent='Loaded preset: '+id;return;}}catch(e){}
+  }
+  $('info').textContent='Preset not found: '+id;
+}
+
+function randomise(){
+  const bases=['male_average','male_heavy','male_slim','female_average','female_athletic'];
+  const hairs_m=['buzz_cut','shaved','slicked_back','fade_sharp','messy_short','dreads_short','man_bun','receding'];
+  const hairs_f=['ponytail_tight','messy_bun','shoulder_natural','big_curls','beach_waves','braids','bob_sharp','long_sleek'];
+  const beards=['none','none','stubble_perfect','full_thick','goatee','designer_stubble'];
+  const tops=['polo_shirt','hoodie','tracksuit_top','puffer_jacket','linen_shirt_open','tank_top','suit_jacket','linen_blazer','thobe_white','simple_jumper'];
+  const bots=['tracksuit_bottoms','slim_jeans','cargo_pants','chinos_slim','jeans_regular','suit_trousers'];
+  const shoes=['trainers_white','loafers_black','air_max_white','chelsea_boots','flip_flops','work_boots'];
+  const hats=['none','none','none','flat_cap','beanie','baseball_cap','durag','snapback'];
+  const accs=['none','none','gold_chain','vape_pen','airpods','aviator_sunglasses','man_bag'];
+  const walks=['normal','swagger','strut','bounce','relaxed','slow_power'];
+  const pk=a=>a[Math.floor(Math.random()*a.length)];
+  const rr=(a,b)=>a+Math.random()*(b-a);
+
+  const base=pk(bases);const isFem=base.startsWith('female');
+  const rc=()=>[rr(0,1),rr(0,1),rr(0,1)];
+  setCharData({
+    id:'random_'+Math.floor(Math.random()*99999),display_name:'',role:'civilian',region:pk(['consett','london','miami','dubai']),
+    base_model:base,
+    body:{height:rr(0.85,1.2),width:rr(0.8,1.3),head_scale:rr(1.0,1.5),arm_length:rr(0.9,1.1),leg_length:rr(0.9,1.1)},
+    face:{skin_tone:[rr(0.3,0.95),rr(0.2,0.8),rr(0.15,0.7)],beard:isFem?'none':pk(beards),hair:isFem?pk(hairs_f):pk(hairs_m),hair_colour:[rr(0,0.5),rr(0,0.4),rr(0,0.3)],brows:'natural',eyes:'neutral',nose_size:rr(0.7,1.4),jaw_width:rr(0.8,1.3)},
+    outfit:{top:pk(tops),top_colour:rc(),bottom:pk(bots),bottom_colour:rc(),shoes:pk(shoes),hat:pk(hats),accessory:pk(accs)},
+    personality_tags:[],voice_pitch:rr(0.7,1.3),walk_style:pk(walks)
+  });
+}
+
+init();
+</script>
+</body>
+</html>
