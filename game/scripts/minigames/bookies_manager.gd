@@ -124,3 +124,19 @@ func _generate_form() -> String:
 	for i in range(5):
 		form += chars[randi() % chars.size()]
 	return form
+
+
+const RACE_SCENE_PATH := "res://scenes/minigames/bookies_race.tscn"
+
+var pending_race_type: int = -1
+var pending_runners: Array[Dictionary] = []
+var pending_pick: String = ""
+var pending_bet: float = 0.0
+
+
+func launch_race_scene(race_type: int, runners: Array[Dictionary], pick: String, bet: float) -> void:
+	pending_race_type = race_type
+	pending_runners = runners
+	pending_pick = pick
+	pending_bet = bet
+	get_tree().change_scene_to_file(RACE_SCENE_PATH)

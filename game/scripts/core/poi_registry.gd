@@ -349,16 +349,79 @@ const DUBAI_POIS: Array = [
 ]
 
 
-# Quick lookup: region -> POI array
-const REGION_POIS: Dictionary = {
-	GameState.Region.CONSETT: "consett",
-	GameState.Region.LONDON: "london",
-	GameState.Region.MIAMI: "miami",
-	GameState.Region.DUBAI: "dubai",
+const MAP_JSON_PATH := "res://data/maps/map_layout.json"
+const TYPE_NAME_MAP: Dictionary = {
+	"SAFEHOUSE": POIType.SAFEHOUSE, "SHOP": POIType.SHOP,
+	"BOOKIES": POIType.BOOKIES, "NIGHTCLUB": POIType.NIGHTCLUB,
+	"PARK": POIType.PARK, "VAPE_SHOP": POIType.VAPE_SHOP,
+	"BARBERS": POIType.BARBERS, "RECRUITMENT_SHOP": POIType.RECRUITMENT_SHOP,
+	"FACTION_HQ": POIType.FACTION_HQ,
 }
+const REGION_NAME_MAP: Dictionary = {
+	"consett": GameState.Region.CONSETT, "london": GameState.Region.LONDON,
+	"miami": GameState.Region.MIAMI, "dubai": GameState.Region.DUBAI,
+}
+
+var _json_pois: Dictionary = {}
+var _json_loaded: bool = false
+
+
+func _ready() -> void:
+	_try_load_json()
+
+
+func _try_load_json() -> void:
+	if not FileAccess.file_exists(MAP_JSON_PATH):
+		return
+	var file := FileAccess.open(MAP_JSON_PATH, FileAccess.READ)
+	if not file:
+		return
+	var json := JSON.new()
+	if json.parse(file.get_as_text()) != OK:
+		push_warning("POIRegistry: Failed to parse map JSON")
+		file.close()
+		return
+	file.close()
+
+	var data: Dictionary = json.data
+	for region_name in data:
+		var region_enum: int = REGION_NAME_MAP.get(region_name, -1)
+		if region_enum == -1:
+			continue
+		var rd: Dictionary = data[region_name]
+		var pois_raw: Array = rd.get("pois", [])
+		var parsed: Array = []
+		for raw in pois_raw:
+			parsed.append(_parse_json_poi(raw))
+		_json_pois[region_enum] = parsed
+
+	_json_loaded = true
+
+
+func _parse_json_poi(raw: Dictionary) -> Dictionary:
+	var pos_arr: Array = raw.get("position", [0, 0, 0])
+	var size_arr: Array = raw.get("size", [5, 5, 5])
+	var col_arr: Array = raw.get("colour", [0.5, 0.5, 0.5])
+	var poi := {
+		"id": raw.get("id", ""),
+		"type": TYPE_NAME_MAP.get(raw.get("type", ""), POIType.SHOP),
+		"display_name": raw.get("display_name", ""),
+		"description": raw.get("description", ""),
+		"position": Vector3(pos_arr[0], pos_arr[1], pos_arr[2]),
+		"size": Vector3(size_arr[0], size_arr[1], size_arr[2]),
+		"colour": Color(col_arr[0], col_arr[1], col_arr[2]),
+		"open_hours": raw.get("open_hours", [0, 24]),
+	}
+	if raw.has("faction_id") and raw["faction_id"] != "":
+		poi["faction_id"] = raw["faction_id"]
+	if raw.has("interior_scene") and raw["interior_scene"] != "":
+		poi["interior_scene"] = raw["interior_scene"]
+	return poi
 
 
 func get_pois_for_region(region: GameState.Region) -> Array:
+	if _json_loaded and _json_pois.has(region):
+		return _json_pois[region]
 	match region:
 		GameState.Region.CONSETT: return CONSETT_POIS
 		GameState.Region.LONDON: return LONDON_POIS

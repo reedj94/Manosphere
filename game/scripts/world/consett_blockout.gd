@@ -113,18 +113,71 @@ func _add_poi_building(poi: Dictionary) -> void:
 	body.add_child(mesh_inst)
 	body.add_child(col)
 
-	# Signage (3D label floating above the building)
 	if poi_type != POIRegistry.POIType.PARK:
-		var sign_label := Label3D.new()
-		sign_label.text = poi["display_name"]
-		sign_label.font_size = 48
-		sign_label.pixel_size = 0.01
-		sign_label.position = Vector3(0.0, size.y + LABEL_HEIGHT_OFFSET, 0.0)
-		sign_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		sign_label.modulate = _get_sign_colour(poi_type, poi)
-		sign_label.outline_size = 8
-		sign_label.name = "Sign"
-		body.add_child(sign_label)
+		# Storefront sign (mounted on the front face, not billboard)
+		var front_sign := Label3D.new()
+		front_sign.text = poi["display_name"]
+		front_sign.font_size = 64
+		front_sign.pixel_size = 0.008
+		front_sign.position = Vector3(0.0, size.y * 0.78, size.z * 0.5 + 0.05)
+		front_sign.modulate = _get_sign_colour(poi_type, poi)
+		front_sign.outline_size = 12
+		front_sign.outline_modulate = Color(0.0, 0.0, 0.0, 0.9)
+		front_sign.name = "FrontSign"
+		body.add_child(front_sign)
+
+		# Back-facing sign (same text, rotated 180)
+		var back_sign := Label3D.new()
+		back_sign.text = poi["display_name"]
+		back_sign.font_size = 64
+		back_sign.pixel_size = 0.008
+		back_sign.position = Vector3(0.0, size.y * 0.78, -size.z * 0.5 - 0.05)
+		back_sign.rotation_degrees = Vector3(0.0, 180.0, 0.0)
+		back_sign.modulate = _get_sign_colour(poi_type, poi)
+		back_sign.outline_size = 12
+		back_sign.outline_modulate = Color(0.0, 0.0, 0.0, 0.9)
+		back_sign.name = "BackSign"
+		body.add_child(back_sign)
+
+		# Floating billboard sign (visible from distance)
+		var float_sign := Label3D.new()
+		float_sign.text = poi["display_name"]
+		float_sign.font_size = 36
+		float_sign.pixel_size = 0.01
+		float_sign.position = Vector3(0.0, size.y + LABEL_HEIGHT_OFFSET, 0.0)
+		float_sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		float_sign.modulate = _get_sign_colour(poi_type, poi) * Color(1.0, 1.0, 1.0, 0.7)
+		float_sign.outline_size = 6
+		float_sign.name = "FloatingSign"
+		body.add_child(float_sign)
+
+		# Door (darker rectangle on the front face)
+		var door_width: float = clampf(size.x * 0.2, 1.0, 2.0)
+		var door_height: float = clampf(size.y * 0.35, 2.0, 3.0)
+		var door := MeshInstance3D.new()
+		var door_mesh := BoxMesh.new()
+		door_mesh.size = Vector3(door_width, door_height, 0.08)
+		door.mesh = door_mesh
+		door.position = Vector3(0.0, door_height * 0.5, size.z * 0.5 + 0.04)
+		var door_mat := StandardMaterial3D.new()
+		door_mat.albedo_color = colour * 0.5
+		door_mat.roughness = 0.7
+		door.material_override = door_mat
+		door.name = "Door"
+		body.add_child(door)
+
+		# Door frame (slightly lighter border)
+		var frame := MeshInstance3D.new()
+		var frame_mesh := BoxMesh.new()
+		frame_mesh.size = Vector3(door_width + 0.2, door_height + 0.15, 0.06)
+		frame.mesh = frame_mesh
+		frame.position = Vector3(0.0, door_height * 0.5 + 0.05, size.z * 0.5 + 0.02)
+		var frame_mat := StandardMaterial3D.new()
+		frame_mat.albedo_color = colour * 0.7
+		frame_mat.roughness = 0.85
+		frame.material_override = frame_mat
+		frame.name = "DoorFrame"
+		body.add_child(frame)
 
 	# Interaction trigger zone (Area3D slightly larger than building)
 	var area := Area3D.new()

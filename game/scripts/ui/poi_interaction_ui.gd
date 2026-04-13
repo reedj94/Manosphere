@@ -36,6 +36,11 @@ func open_for_poi(poi_id: String) -> void:
 		_show_closed_message(poi)
 		return
 
+	if poi.has("interior_scene") and poi["interior_scene"] != "":
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		get_tree().change_scene_to_file(poi["interior_scene"])
+		return
+
 	current_poi_id = poi_id
 	is_open = true
 
@@ -158,45 +163,12 @@ func _on_bet_confirmed(race_type: int, runner_name: String, amount: float, runne
 		desc_label.text = "Can't place that bet!"
 		return
 
-	_clear_buttons()
-	title_label.text = "Race in progress..."
-	desc_label.text = "Your bet: £%.0f on %s" % [amount, runner_name]
-
-	var result: Dictionary = BookiesManager.run_race(runners)
-	_show_race_result(result)
-
-
-func _show_race_result(result: Dictionary) -> void:
-	_clear_buttons()
-	var results: Array = result["results"]
-	var player_won: bool = result["player_won"]
-
-	if player_won:
-		title_label.text = "WINNER!"
-		desc_label.text = "£%.0f payout! Your champion %s came through!" % [result["payout"], result["winner"]]
-	else:
-		title_label.text = "LOSER!"
-		desc_label.text = "%s won. You lost £%.0f. The bookies always win." % [result["winner"], result["bet_amount"]]
-
-	var pos := 1
-	for r in results:
-		var label := Label.new()
-		var marker: String = " ← YOUR BET" if r["name"] == BookiesManager.current_bet_selection else ""
-		label.text = "#%d  %s  (score: %.1f)%s" % [pos, r["name"], r["score"], marker]
-		if pos == 1:
-			label.add_theme_color_override("font_color", Color(0.2, 0.9, 0.3))
-		buttons_container.add_child(label)
-		pos += 1
-
-	var again_btn := Button.new()
-	again_btn.text = "Bet Again"
-	again_btn.custom_minimum_size = Vector2(200, 40)
-	again_btn.pressed.connect(open_for_poi.bind(current_poi_id))
-	buttons_container.add_child(again_btn)
+	_close()
+	BookiesManager.launch_race_scene(race_type, runners, runner_name, amount)
 
 
 func _do_save() -> void:
-	SaveManager.save_game()
+	SaveManager.save_at_man_cave()
 	desc_label.text = "Game saved."
 
 
