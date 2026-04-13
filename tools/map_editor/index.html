@@ -472,136 +472,186 @@ function generateTown(){
     items.push(it);return it;
   }
 
-  // Style-specific palettes
-  const palettes={
-    northern:{ground:'#2a2d35',road:'#505058',pave:'#707078',bldg:['#6a6a75','#7a6a55','#706860','#808078','#756858'],names:['Davo\'s News','Battered Dreams','Second Chances','Greggs','The Chippy','Bargain Booze','Cash Converters','Coral','Betfred','Sports Direct']},
-    city:{ground:'#282830',road:'#585860',pave:'#808088',bldg:['#707080','#606068','#808088','#585860','#6a6a72'],names:['Pret','Foxtons','Costa','Tesco Metro','Nando\'s','Byron','Five Guys','All Bar One','Wagamama','EAT']},
-    beach:{ground:'#3a3530',road:'#606058',pave:'#909088',bldg:['#c0a880','#a8c0b8','#d0b890','#b8a890','#90b0a0'],names:['Beach Bar','Surf Shack','Tiki Lounge','Smoothie Stop','Board Rental','Ceviche Place','Açaí Bowl','Flip Flop Store']},
-    luxury:{ground:'#2e2a28',road:'#686060',pave:'#a0988e',bldg:['#c8b888','#b8a878','#d8c898','#a89868','#e0d0a0'],names:['Gucci','Rolex','Louis V','The Penthouse','Gold Lounge','Diamond Club','Caviar Bar','Yacht Broker']},
+  // Style configs — each region has unique building heights, terrain, props, vehicles, names
+  const S={
+    northern:{
+      ground:'#2a2d35',road:'#505058',pave:'#707078',water:'#3a6a8a',
+      bldg:['#6a6a75','#7a6a55','#706860','#808078','#756858','#686060','#7a7a72'],
+      names:['Davo\'s News','Battered Dreams','Greggs','The Chippy','Bargain Booze','Cash Converters','Coral','Betfred','Sports Direct','Poundland','Iceland','Farmfoods','Ladbrokes','William Hill','Charity Shop','Happy House Chinese','Kebab King','Spar'],
+      hMin:3,hMax:7, wMin:5,wMax:12, tallChance:0.05, tallH:[8,12],
+      parkName:'Memorial Gardens',parkDesc:'Rusted climbing frame, broken bench, pigeons own this place.',
+      parkColor:'#3a5a2a',grassColor:'#2a4a1a',
+      treeChance:0.4,deadTreeChance:0.3,bushChance:0.2,
+      props:['PROP_LAMP','PROP_LAMP','PROP_BIN','PROP_BIN','PROP_BENCH','PROP_WHEELIE_BIN','PROP_WHEELIE_BIN','PROP_TREE_DEAD','PROP_SKIP','PROP_SHOPPING_TROLLEY','PROP_BOLLARD','PROP_POST_BOX','PROP_BUS_STOP','PROP_PHONE_BOX'],
+      vehicles:['VEHICLE_CAR','VEHICLE_CAR','VEHICLE_CAR','VEHICLE_VAN','VEHICLE_VAN','VEHICLE_BUS'],
+      carColors:['#6688cc','#888888','#aa6666','#777777','#666666','#998877'],
+      sandPatches:0,beachEdge:false,
+      autoRiver:false,autoLake:false,autoHilly:true,hillCount:[2,4],hillStr:[0.5,2],
+      roadSpacingBase:28,roadJitter:5,
+    },
+    city:{
+      ground:'#222228',road:'#585860',pave:'#808088',water:'#3a6a8a',
+      bldg:['#707080','#606068','#808088','#585860','#6a6a72','#555560','#484850'],
+      names:['Pret','Foxtons','Costa','Tesco Metro','Nando\'s','Byron','Five Guys','All Bar One','Wagamama','Honest Burgers','Leon','Itsu','Eat','Flat Iron','TK Maxx','Superdrug','Boots','Sainsbury\'s Local','The Ivy','Pizza Express'],
+      hMin:6,hMax:14, wMin:6,wMax:14, tallChance:0.25, tallH:[18,35],
+      parkName:'Victoria Gardens',parkDesc:'Joggers, dog walkers, one bloke doing burpees at 5am.',
+      parkColor:'#3a6a2a',grassColor:'#2a5a1a',
+      treeChance:0.3,deadTreeChance:0.05,bushChance:0.3,
+      props:['PROP_LAMP','PROP_LAMP','PROP_LAMP','PROP_BOLLARD','PROP_BOLLARD','PROP_BIN','PROP_BENCH','PROP_TRAFFIC_LIGHT','PROP_TRAFFIC_LIGHT','PROP_BUS_STOP','PROP_BARRIER','PROP_TREE'],
+      vehicles:['VEHICLE_CAR','VEHICLE_CAR','VEHICLE_TAXI','VEHICLE_TAXI','VEHICLE_BUS','VEHICLE_BUS','VEHICLE_VAN'],
+      carColors:['#333338','#444448','#222228','#555558','#666668','#2a2a2e'],
+      sandPatches:0,beachEdge:false,
+      autoRiver:true,autoLake:false,autoHilly:false,hillCount:[0,1],hillStr:[0.3,1],
+      roadSpacingBase:22,roadJitter:3,
+    },
+    beach:{
+      ground:'#c8b888',road:'#a09880',pave:'#b8b0a0',water:'#2a8acc',
+      bldg:['#c0a880','#a8c0b8','#d0b890','#b8a890','#90b0a0','#d8c0a0','#b0c8c0'],
+      names:['Beach Bar','Surf Shack','Tiki Lounge','Smoothie Stop','Board Rental','Ceviche Place','Açaí Bowl','Flip Flop Store','Oceanside Diner','Palm Café','Sunset Grill','Wave Rider','Mango Juice','Bikini Boutique','Tan Line Studio'],
+      hMin:3,hMax:6, wMin:5,wMax:10, tallChance:0.1, tallH:[10,16],
+      parkName:'Sunset Boardwalk',parkDesc:'Palm trees, outdoor gyms, influencers filming every 3 metres.',
+      parkColor:'#4a8a3a',grassColor:'#3a7a2a',
+      treeChance:0.6,deadTreeChance:0,bushChance:0.4,
+      props:['PROP_LAMP','PROP_BENCH','PROP_BENCH','PROP_TREE','PROP_TREE','PROP_TREE','PROP_BUSH','PROP_BUSH','PROP_BIN','PROP_BOLLARD_LIGHT'],
+      vehicles:['VEHICLE_CAR','VEHICLE_CAR','VEHICLE_TAXI','VEHICLE_LAMBO','VEHICLE_CAR'],
+      carColors:['#cc4444','#44aacc','#ffffff','#eecc44','#ff8844','#88ccff'],
+      sandPatches:4,beachEdge:true,
+      autoRiver:false,autoLake:false,autoHilly:false,hillCount:[0,1],hillStr:[0.2,0.8],
+      roadSpacingBase:32,roadJitter:6,
+    },
+    luxury:{
+      ground:'#3a3530',road:'#686060',pave:'#a0988e',water:'#2a7acc',
+      bldg:['#c8b888','#b8a878','#d8c898','#a89868','#e0d0a0','#d0c090','#c0b080'],
+      names:['Gucci','Rolex','Louis V','The Penthouse','Gold Lounge','Diamond Club','Caviar Bar','Yacht Broker','Versace','Lamborghini Dealer','Sheikh\'s Tailor','Burj Café','Palm Tower','Crypto Exchange','Ascend Media','Apex Retreat','Marina Sushi','Desert Rose Spa'],
+      hMin:10,hMax:25, wMin:8,wMax:16, tallChance:0.4, tallH:[30,60],
+      parkName:'Oasis Promenade',parkDesc:'Immaculate artificial gardens. Every bench has a QR code.',
+      parkColor:'#4a8a4a',grassColor:'#3a7a3a',
+      treeChance:0.5,deadTreeChance:0,bushChance:0.5,
+      props:['PROP_LAMP','PROP_LAMP','PROP_BOLLARD_LIGHT','PROP_BOLLARD_LIGHT','PROP_BENCH','PROP_TREE','PROP_TREE','PROP_BUSH','PROP_BUSH','PROP_HEDGE','PROP_HEDGE','PROP_BARRIER'],
+      vehicles:['VEHICLE_LAMBO','VEHICLE_LAMBO','VEHICLE_ROLLS','VEHICLE_ROLLS','VEHICLE_ROLLS','VEHICLE_CAR','VEHICLE_TAXI'],
+      carColors:['#e8c840','#ffffff','#222222','#cc0000','#0044cc','#ff6600'],
+      sandPatches:3,beachEdge:false,
+      autoRiver:false,autoLake:false,autoHilly:false,hillCount:[0,0],hillStr:[0,0],
+      roadSpacingBase:26,roadJitter:4,
+    },
   };
-  const pal=palettes[style]||palettes.northern;
+  const P=S[style]||S.northern;
 
-  // --- MAIN ROADS (grid pattern) ---
-  const roadW=6,roadSpacing=30+ri(0,10);
-  const numRoadsX=Math.max(2,Math.floor(W/(roadSpacing))-1);
-  const numRoadsZ=Math.max(2,Math.floor(D/(roadSpacing))-1);
-  const roadXPositions=[],roadZPositions=[];
+  // Override checkboxes with style defaults if user left them off
+  const doRiver=hasRiver||P.autoRiver;
+  const doLake=hasLake||P.autoLake;
+  const doHilly=hilly||P.autoHilly;
 
-  for(let i=0;i<numRoadsX;i++){
-    const x=-hw+roadSpacing+i*roadSpacing+rr(-3,3);
-    roadXPositions.push(x);
-    place('ROAD',x,0,roadW,0.1,D-10,pal.road,'',{});
-    place('PAVEMENT',x-roadW/2-1,0,2,0.15,D-10,pal.pave,'',{});
-    place('PAVEMENT',x+roadW/2+1,0,2,0.15,D-10,pal.pave,'',{});
+  // --- BEACH SAND EDGE ---
+  if(P.beachEdge){
+    place('SAND',0,-hd+8,W,0.05,20,P.ground,'Beach',{});
+    place('SAND',0,-hd+3,W,0.05,8,'#d8c898','Shoreline',{});
+    place('LAKE',0,-hd-5,W+20,0.3,16,P.water,'Ocean',{});
+    for(let t=0;t<ri(4,8);t++)place('PROP_TREE',rr(-hw*0.8,hw*0.8),-hd+rr(10,20),2,ri(5,8),2,'#3a7a3a','',{});
   }
-  for(let i=0;i<numRoadsZ;i++){
-    const z=-hd+roadSpacing+i*roadSpacing+rr(-3,3);
-    roadZPositions.push(z);
-    place('ROAD',0,z,W-10,0.1,roadW,pal.road,'',{});
-    place('PAVEMENT',0,z-roadW/2-1,W-10,0.15,2,pal.pave,'',{});
-    place('PAVEMENT',0,z+roadW/2+1,W-10,0.15,2,pal.pave,'',{});
+  if(P.sandPatches>0){
+    for(let s=0;s<P.sandPatches;s++){
+      const sx=rr(-hw*0.6,hw*0.6),sz=rr(-hd*0.4,hd*0.4);
+      place('SAND',sx,sz,rr(8,18),0.05,rr(6,14),'#d8c898','',{});
+    }
   }
 
-  // Crossings at intersections
-  for(const rx of roadXPositions)for(const rz of roadZPositions){
-    if(rng()>0.5)place('CROSSING',rx,rz+roadW/2+2,roadW,0.12,2,'#e0e0e0','',{});
+  // --- ROADS ---
+  const roadW=P.beachEdge?5:6;
+  const roadSpacing=P.roadSpacingBase+ri(0,P.roadJitter);
+  const numRX=Math.max(2,Math.floor(W/roadSpacing)-1);
+  const numRZ=Math.max(1,Math.floor(D/roadSpacing)-1);
+  const rxPos=[],rzPos=[];
+
+  for(let i=0;i<numRX;i++){
+    const x=-hw+roadSpacing+i*roadSpacing+rr(-2,2);
+    rxPos.push(x);
+    place('ROAD',x,0,roadW,0.1,D-10,P.road,'',{});
+    place('PAVEMENT',x-roadW/2-1,0,2,0.15,D-10,P.pave,'',{});
+    place('PAVEMENT',x+roadW/2+1,0,2,0.15,D-10,P.pave,'',{});
   }
+  for(let i=0;i<numRZ;i++){
+    const z=-hd+roadSpacing+i*roadSpacing+rr(-2,2);
+    rzPos.push(z);
+    place('ROAD',0,z,W-10,0.1,roadW,P.road,'',{});
+    place('PAVEMENT',0,z-roadW/2-1,W-10,0.15,2,P.pave,'',{});
+    place('PAVEMENT',0,z+roadW/2+1,W-10,0.15,2,P.pave,'',{});
+  }
+  for(const rx of rxPos)for(const rz of rzPos){if(rng()>0.4)place('CROSSING',rx,rz+roadW/2+2,roadW,0.12,2,'#e0e0e0','',{});}
 
   // --- WATER ---
-  if(hasRiver){
-    const rSide=rng()>0.5;
-    const rx=rSide?rr(hw*0.5,hw*0.8):rr(-hw*0.8,-hw*0.5);
-    place('RIVER',rx,0,3+rr(0,3),0.25,D*0.9,'#3a7abb','River',{});
-  }
-  if(hasLake){
-    let lx=rr(-hw*0.4,hw*0.4),lz=rr(-hd*0.4,hd*0.4);
-    for(let tries=0;tries<20;tries++){if(!overlaps(lx,lz,22,18))break;lx=rr(-hw*0.4,hw*0.4);lz=rr(-hd*0.4,hd*0.4);}
-    place('LAKE',lx,lz,rr(14,24),0.3,rr(12,20),'#3a7abb','Lake',{});
-  }
+  if(doRiver){const side=rng()>0.5?1:-1;const rx=side*rr(hw*0.5,hw*0.85);place('RIVER',rx,0,rr(3,6),0.25,D*0.9,P.water,'River',{});}
+  if(doLake){let lx=rr(-hw*0.35,hw*0.35),lz=rr(-hd*0.3,hd*0.3);for(let t=0;t<20;t++){if(!overlaps(lx,lz,22,18))break;lx=rr(-hw*0.35,hw*0.35);lz=rr(-hd*0.3,hd*0.3);}place('LAKE',lx,lz,rr(14,24),0.3,rr(12,20),P.water,'Lake',{});}
 
   // --- PARK ---
   if(hasPark){
-    let px=rr(-hw*0.3,hw*0.3),pz=rr(-hd*0.3,hd*0.3);
-    for(let tries=0;tries<20;tries++){if(!overlaps(px,pz,22,18))break;px=rr(-hw*0.3,hw*0.3);pz=rr(-hd*0.3,hd*0.3);}
-    const pw=rr(16,26),pd=rr(14,22);
-    place('PARK',px,pz,pw,2,pd,'#4a7a3a','Memorial Gardens',{desc:'A park. Possibly neglected.'});
-    place('GRASS_PATCH',px,pz,pw+4,0.05,pd+4,'#3a6a2a','',{});
-    for(let t=0;t<ri(3,6);t++)place('PROP_TREE',px+rr(-pw/3,pw/3),pz+rr(-pd/3,pd/3),2,ri(4,7),2,'#3a7a3a','',{});
-    if(rng()>0.3)place('PROP_BENCH',px+rr(-5,5),pz+rr(-5,5),1.8,0.5,0.6,'#8a7055','',{});
-    if(rng()>0.5)place('PROP_CLIMBING_FRAME',px+rr(-6,6),pz+rr(-6,6),3,2.5,3,'#dd5555','',{});
-    if(rng()>0.6)place('POND',px+rr(-4,4),pz+rr(-4,4),rr(4,8),0.2,rr(4,8),'#4a8acc','Pond',{});
+    let px=rr(-hw*0.3,hw*0.3),pz=rr(-hd*0.2,hd*0.2);
+    for(let t=0;t<20;t++){if(!overlaps(px,pz,24,20))break;px=rr(-hw*0.3,hw*0.3);pz=rr(-hd*0.2,hd*0.2);}
+    const pw=rr(16,28),pd=rr(14,24);
+    place('PARK',px,pz,pw,2,pd,P.parkColor,P.parkName,{desc:P.parkDesc});
+    place('GRASS_PATCH',px,pz,pw+4,0.05,pd+4,P.grassColor,'',{});
+    for(let t=0;t<ri(4,8);t++)place('PROP_TREE',px+rr(-pw/3,pw/3),pz+rr(-pd/3,pd/3),2,ri(4,8),2,'#3a7a3a','',{});
+    for(let t=0;t<ri(1,3);t++)place('PROP_BENCH',px+rr(-pw/3,pw/3),pz+rr(-pd/3,pd/3),1.8,0.5,0.6,'#8a7055','',{});
+    if(style==='northern'){
+      place('PROP_CLIMBING_FRAME',px+rr(-4,4),pz+rr(-4,4),3,2.5,3,'#dd5555','',{});
+      if(rng()>0.4)place('PROP_SWING',px+rr(-6,6),pz+rr(-6,6),3,2.5,1,'#55aadd','',{});
+      if(rng()>0.5)place('PROP_SHOPPING_TROLLEY',px+rr(-pw/3,pw/3),pz+rr(-pd/3,pd/3),0.6,0.9,0.9,'#bbbbbb','',{});
+    }
+    if(rng()>0.5)place('POND',px+rr(-5,5),pz+rr(-5,5),rr(4,10),0.2,rr(4,10),'#4a8acc','Pond',{});
   }
 
-  // --- BUILDINGS ---
-  const buildingCount=8+density*6+ri(0,5);
-  for(let b=0;b<buildingCount;b++){
-    let bx=rr(-hw+10,hw-10),bz=rr(-hd+10,hd-10);
-    const bw=rr(5,14),bd=rr(5,14),bh=rr(4,8+density*2);
+  // --- BUILDINGS (themed heights) ---
+  const bCount=8+density*7+ri(0,5);
+  for(let b=0;b<bCount;b++){
+    let bx=rr(-hw+10,hw-10),bz=rr(P.beachEdge?-hd+25:-hd+10,hd-10);
+    const bw=rr(P.wMin,P.wMax),bd=rr(P.wMin,P.wMax);
+    let bh=rr(P.hMin,P.hMax);
+    if(rng()<P.tallChance)bh=rr(P.tallH[0],P.tallH[1]);
 
-    // Snap to road edges
     let snapped=false;
-    for(const rx of roadXPositions){
-      if(Math.abs(bx-rx)<roadSpacing/2){
-        const side=bx>rx?1:-1;
-        bx=rx+side*(roadW/2+2+bw/2);
-        snapped=true;break;
-      }
-    }
-    if(!snapped)for(const rz of roadZPositions){
-      if(Math.abs(bz-rz)<roadSpacing/2){
-        const side=bz>rz?1:-1;
-        bz=rz+side*(roadW/2+2+bd/2);
-        snapped=true;break;
-      }
-    }
+    for(const rx of rxPos){if(Math.abs(bx-rx)<roadSpacing/2){bx=rx+(bx>rx?1:-1)*(roadW/2+2+bw/2);snapped=true;break;}}
+    if(!snapped)for(const rz of rzPos){if(Math.abs(bz-rz)<roadSpacing/2){bz=rz+(bz>rz?1:-1)*(roadW/2+2+bd/2);snapped=true;break;}}
 
     if(overlaps(bx,bz,bw,bd))continue;
-    const col=pick(pal.bldg);
-    const name=pick(pal.names);
-    place('BUILDING',bx,bz,bw,bh,bd,col,name,{});
+    place('BUILDING',bx,bz,bw,bh,bd,pick(P.bldg),pick(P.names),{});
   }
 
-  // --- STREET FURNITURE ---
-  const propCount=10+density*5;
-  for(let p=0;p<propCount;p++){
+  // --- PROPS (themed) ---
+  const pCount=12+density*6;
+  for(let p=0;p<pCount;p++){
     const px=rr(-hw+5,hw-5),pz=rr(-hd+5,hd-5);
     if(overlaps(px,pz,1,1))continue;
-    const propType=pick(['PROP_LAMP','PROP_LAMP','PROP_BIN','PROP_BENCH','PROP_BOLLARD','PROP_TREE','PROP_TREE_DEAD','PROP_BUSH','PROP_WHEELIE_BIN']);
-    const propData={PROP_LAMP:{w:0.3,h:5,d:0.3,c:'#ffeab5'},PROP_BIN:{w:0.4,h:0.7,d:0.4,c:'#555560'},PROP_BENCH:{w:1.8,h:0.5,d:0.6,c:'#8a7055'},PROP_BOLLARD:{w:0.2,h:0.8,d:0.2,c:'#777777'},PROP_TREE:{w:2,h:6,d:2,c:'#3a7a3a'},PROP_TREE_DEAD:{w:1.5,h:4,d:1.5,c:'#7a6a55'},PROP_BUSH:{w:1.5,h:1,d:1.5,c:'#4a8a4a'},PROP_WHEELIE_BIN:{w:0.6,h:1,d:0.7,c:'#336633'}};
-    const pd=propData[propType]||propData.PROP_LAMP;
-    place(propType,px,pz,pd.w,pd.h,pd.d,pd.c,'',{});
+    const pt=pick(P.props);
+    const pd={PROP_LAMP:{w:0.3,h:5,d:0.3,c:'#ffeab5'},PROP_LAMP_DOUBLE:{w:0.3,h:6,d:0.3,c:'#ffeab5'},PROP_BOLLARD_LIGHT:{w:0.2,h:1,d:0.2,c:'#aaaaaa'},PROP_BIN:{w:0.4,h:0.7,d:0.4,c:'#555560'},PROP_BENCH:{w:1.8,h:0.5,d:0.6,c:'#8a7055'},PROP_BOLLARD:{w:0.2,h:0.8,d:0.2,c:'#777777'},PROP_TREE:{w:2,h:6,d:2,c:'#3a7a3a'},PROP_TREE_DEAD:{w:1.5,h:4,d:1.5,c:'#7a6a55'},PROP_BUSH:{w:1.5,h:1,d:1.5,c:'#4a8a4a'},PROP_WHEELIE_BIN:{w:0.6,h:1,d:0.7,c:'#336633'},PROP_SKIP:{w:2,h:1.5,d:3,c:'#ccaa22'},PROP_SHOPPING_TROLLEY:{w:0.6,h:0.9,d:0.9,c:'#bbbbbb'},PROP_POST_BOX:{w:0.5,h:1.2,d:0.5,c:'#dd3333'},PROP_BUS_STOP:{w:3,h:2.8,d:1.5,c:'#5577bb'},PROP_PHONE_BOX:{w:1,h:2.5,d:1,c:'#dd3333'},PROP_TRAFFIC_LIGHT:{w:0.3,h:3.5,d:0.3,c:'#444444'},PROP_BARRIER:{w:3,h:1,d:0.3,c:'#ee8800'},PROP_HEDGE:{w:0.6,h:1.2,d:6,c:'#3a6a3a'},PROP_CLIMBING_FRAME:{w:3,h:2.5,d:3,c:'#dd5555'},PROP_SWING:{w:3,h:2.5,d:1,c:'#55aadd'}};
+    const d=pd[pt]||pd.PROP_LAMP;
+    place(pt,px,pz,d.w,d.h,d.d,d.c,'',{});
   }
 
-  // --- VEHICLES ---
-  const vehicleCount=density*3+ri(1,4);
-  for(let v=0;v<vehicleCount;v++){
-    const types=['VEHICLE_CAR','VEHICLE_CAR','VEHICLE_CAR','VEHICLE_VAN','VEHICLE_TAXI','VEHICLE_BUS'];
-    if(style==='luxury'){types.push('VEHICLE_LAMBO','VEHICLE_ROLLS','VEHICLE_ROLLS');}
-    const vt=pick(types);
-    const vData={VEHICLE_CAR:{w:2,h:1.5,d:4.5,c:pick(['#6688cc','#cc6666','#66aa66','#aaaaaa','#cccc66'])},VEHICLE_VAN:{w:2.2,h:2.2,d:5.5,c:'#c8c8c8'},VEHICLE_TAXI:{w:2,h:1.5,d:4.5,c:'#eedd55'},VEHICLE_BUS:{w:2.5,h:3,d:10,c:'#dd4444'},VEHICLE_LAMBO:{w:2,h:1.2,d:4.8,c:'#ff7722'},VEHICLE_ROLLS:{w:2.2,h:1.6,d:5.8,c:'#e8c840'}};
-    const vd=vData[vt]||vData.VEHICLE_CAR;
-    // Park along roads
-    const rx=pick(roadXPositions)||0;
-    const vx=rx+(rng()>0.5?1:-1)*(roadW/2+vd.w/2+0.5);
+  // --- VEHICLES (themed) ---
+  const vCount=density*3+ri(2,5);
+  for(let v=0;v<vCount;v++){
+    const vt=pick(P.vehicles);
+    const vd={VEHICLE_CAR:{w:2,h:1.5,d:4.5},VEHICLE_VAN:{w:2.2,h:2.2,d:5.5},VEHICLE_TAXI:{w:2,h:1.5,d:4.5},VEHICLE_BUS:{w:2.5,h:3,d:10},VEHICLE_LAMBO:{w:2,h:1.2,d:4.8},VEHICLE_ROLLS:{w:2.2,h:1.6,d:5.8}};
+    const sz=vd[vt]||vd.VEHICLE_CAR;
+    const vc=vt==='VEHICLE_TAXI'?'#eedd55':vt==='VEHICLE_BUS'?'#dd4444':vt==='VEHICLE_LAMBO'?'#ff7722':vt==='VEHICLE_ROLLS'?'#e8c840':vt==='VEHICLE_VAN'?'#c8c8c8':pick(P.carColors);
+    const rx=pick(rxPos)||0;
+    const vx=rx+(rng()>0.5?1:-1)*(roadW/2+sz.w/2+0.5);
     const vz=rr(-hd+10,hd-10);
-    if(!overlaps(vx,vz,vd.w,vd.d))place(vt,vx,vz,vd.w,vd.h,vd.d,vd.c,'',{});
+    if(!overlaps(vx,vz,sz.w,sz.d))place(vt,vx,vz,sz.w,sz.h,sz.d,vc,'',{});
   }
 
   // --- SPAWN ---
   place('SPAWN',0,hd*0.6,1,2,1,'#00ff88','Player Spawn',{});
 
-  // --- TERRAIN ---
-  if(hilly){
+  // --- TERRAIN (themed) ---
+  if(doHilly){
     const t=RG[R].terrain;if(t){
       const n=t.length;
       for(let i=0;i<n;i++)for(let j=0;j<n;j++)t[i][j]=0;
-      const hills=ri(2,5);
-      for(let h=0;h<hills;h++){
-        const cx=rr(2,n-2),cz=rr(2,n-2),r=rr(2,5),str=rr(1,4);
-        for(let i=0;i<n;i++)for(let j=0;j<n;j++){
-          const dist=Math.sqrt((i-cx)**2+(j-cz)**2);
-          if(dist<r)t[i][j]+=str*(1-dist/r);
-        }
+      const hc=ri(P.hillCount[0],P.hillCount[1]);
+      for(let h=0;h<hc;h++){
+        const cx=rr(2,n-2),cz=rr(2,n-2),r=rr(2,6),str=rr(P.hillStr[0],P.hillStr[1]);
+        for(let i=0;i<n;i++)for(let j=0;j<n;j++){const d=Math.sqrt((i-cx)**2+(j-cz)**2);if(d<r)t[i][j]+=str*(1-d/r);}
       }
     }
   }
