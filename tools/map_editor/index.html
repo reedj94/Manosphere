@@ -198,6 +198,8 @@ canvas#c{display:block}
       <button class="tb danger" onclick="deleteSelected()">Delete</button>
       <button class="tb" onclick="duplicateSelected()">Dup</button>
       <button class="tb" onclick="rotateSelected()">Rot90</button>
+      <button class="tb" onclick="openGenModal()" style="background:#1a4a3a;border-color:#a6e3a1">Generate Town</button>
+      <button class="tb danger" onclick="if(confirm('Clear ALL items in this region?')){items.length=0;sel=null;draw();autoSave();}">Clear All</button>
       <input type="file" id="imp" accept=".json" style="display:none" onchange="importJSON(event)">
     </div>
     <canvas id="c"></canvas>
@@ -426,6 +428,189 @@ document.addEventListener('keydown',e=>{
   if(e.key==='s'&&e.ctrlKey){e.preventDefault();autoSave();$('status').textContent='Saved!';}
 });
 $('save-modal').addEventListener('click',e=>{if(e.target===$('save-modal'))$('save-modal').classList.remove('active');});
+
+// --- PROCEDURAL TOWN GENERATOR ---
+function openGenModal(){
+  const box=$('save-box');
+  box.innerHTML=`<h2>Generate Town</h2>
+    <p style="font-size:11px;color:#a6adc8;margin-bottom:8px">Procedurally generates a town layout. Existing items will be cleared.</p>
+    <div class="sr"><label>Style</label><select id="gen-style"><option value="northern">Northern UK (Consett)</option><option value="city">City (London)</option><option value="beach">Beach Town (Miami)</option><option value="luxury">Luxury District (Dubai)</option></select></div>
+    <div class="sr"><label>Density</label><input id="gen-density" type="range" min="1" max="5" value="3"></div>
+    <div class="sr"><label>Has River</label><input id="gen-river" type="checkbox"></div>
+    <div class="sr"><label>Has Lake</label><input id="gen-lake" type="checkbox"></div>
+    <div class="sr"><label>Has Park</label><input id="gen-park" type="checkbox" checked></div>
+    <div class="sr"><label>Hilly</label><input id="gen-hilly" type="checkbox"></div>
+    <div class="sr"><label>Seed</label><input id="gen-seed" type="number" value="${Math.floor(Math.random()*99999)}"></div>
+    <br><button class="primary" onclick="generateTown()">Generate</button> <button onclick="$('save-modal').classList.remove('active')">Cancel</button>`;
+  $('save-modal').classList.add('active');
+}
+
+function seededRand(seed){let s=seed;return()=>{s=(s*16807+0)%2147483647;return(s-1)/2147483646;};}
+
+function generateTown(){
+  const style=$('gen-style').value;
+  const density=+$('gen-density').value;
+  const hasRiver=$('gen-river').checked;
+  const hasLake=$('gen-lake').checked;
+  const hasPark=$('gen-park').checked;
+  const hilly=$('gen-hilly').checked;
+  const seed=+$('gen-seed').value||12345;
+  const rng=seededRand(seed);
+  const rr=(a,b)=>a+rng()*(b-a);
+  const ri=(a,b)=>Math.floor(rr(a,b+1));
+  const pick=arr=>arr[Math.floor(rng()*arr.length)];
+
+  items.length=0;
+  idC=1;
+
+  const hw=W/2,hd=D/2;
+  const occupied=[];
+  function overlaps(x,z,w,d){for(const o of occupied){if(Math.abs(x-o.x)<(w+o.w)/2+1&&Math.abs(z-o.z)<(d+o.d)/2+1)return true;}return false;}
+  function place(type,x,z,w,h,d,color,name,opts={}){
+    if(type!=='ROAD'&&type!=='PAVEMENT'&&type!=='CROSSING')occupied.push({x,z,w,d});
+    const it={id:R+'_'+type.toLowerCase()+'_'+(idC++),type,display_name:name||'',description:opts.desc||'',px:Math.round(x*2)/2,pz:Math.round(z*2)/2,w,h,d,color,faction_id:opts.faction||'',open_hour:opts.open||0,close_hour:opts.close||24,rotation:opts.rot||0};
+    items.push(it);return it;
+  }
+
+  // Style-specific palettes
+  const palettes={
+    northern:{ground:'#2a2d35',road:'#505058',pave:'#707078',bldg:['#6a6a75','#7a6a55','#706860','#808078','#756858'],names:['Davo\'s News','Battered Dreams','Second Chances','Greggs','The Chippy','Bargain Booze','Cash Converters','Coral','Betfred','Sports Direct']},
+    city:{ground:'#282830',road:'#585860',pave:'#808088',bldg:['#707080','#606068','#808088','#585860','#6a6a72'],names:['Pret','Foxtons','Costa','Tesco Metro','Nando\'s','Byron','Five Guys','All Bar One','Wagamama','EAT']},
+    beach:{ground:'#3a3530',road:'#606058',pave:'#909088',bldg:['#c0a880','#a8c0b8','#d0b890','#b8a890','#90b0a0'],names:['Beach Bar','Surf Shack','Tiki Lounge','Smoothie Stop','Board Rental','Ceviche Place','Açaí Bowl','Flip Flop Store']},
+    luxury:{ground:'#2e2a28',road:'#686060',pave:'#a0988e',bldg:['#c8b888','#b8a878','#d8c898','#a89868','#e0d0a0'],names:['Gucci','Rolex','Louis V','The Penthouse','Gold Lounge','Diamond Club','Caviar Bar','Yacht Broker']},
+  };
+  const pal=palettes[style]||palettes.northern;
+
+  // --- MAIN ROADS (grid pattern) ---
+  const roadW=6,roadSpacing=30+ri(0,10);
+  const numRoadsX=Math.max(2,Math.floor(W/(roadSpacing))-1);
+  const numRoadsZ=Math.max(2,Math.floor(D/(roadSpacing))-1);
+  const roadXPositions=[],roadZPositions=[];
+
+  for(let i=0;i<numRoadsX;i++){
+    const x=-hw+roadSpacing+i*roadSpacing+rr(-3,3);
+    roadXPositions.push(x);
+    place('ROAD',x,0,roadW,0.1,D-10,pal.road,'',{});
+    place('PAVEMENT',x-roadW/2-1,0,2,0.15,D-10,pal.pave,'',{});
+    place('PAVEMENT',x+roadW/2+1,0,2,0.15,D-10,pal.pave,'',{});
+  }
+  for(let i=0;i<numRoadsZ;i++){
+    const z=-hd+roadSpacing+i*roadSpacing+rr(-3,3);
+    roadZPositions.push(z);
+    place('ROAD',0,z,W-10,0.1,roadW,pal.road,'',{});
+    place('PAVEMENT',0,z-roadW/2-1,W-10,0.15,2,pal.pave,'',{});
+    place('PAVEMENT',0,z+roadW/2+1,W-10,0.15,2,pal.pave,'',{});
+  }
+
+  // Crossings at intersections
+  for(const rx of roadXPositions)for(const rz of roadZPositions){
+    if(rng()>0.5)place('CROSSING',rx,rz+roadW/2+2,roadW,0.12,2,'#e0e0e0','',{});
+  }
+
+  // --- WATER ---
+  if(hasRiver){
+    const rSide=rng()>0.5;
+    const rx=rSide?rr(hw*0.5,hw*0.8):rr(-hw*0.8,-hw*0.5);
+    place('RIVER',rx,0,3+rr(0,3),0.25,D*0.9,'#3a7abb','River',{});
+  }
+  if(hasLake){
+    let lx=rr(-hw*0.4,hw*0.4),lz=rr(-hd*0.4,hd*0.4);
+    for(let tries=0;tries<20;tries++){if(!overlaps(lx,lz,22,18))break;lx=rr(-hw*0.4,hw*0.4);lz=rr(-hd*0.4,hd*0.4);}
+    place('LAKE',lx,lz,rr(14,24),0.3,rr(12,20),'#3a7abb','Lake',{});
+  }
+
+  // --- PARK ---
+  if(hasPark){
+    let px=rr(-hw*0.3,hw*0.3),pz=rr(-hd*0.3,hd*0.3);
+    for(let tries=0;tries<20;tries++){if(!overlaps(px,pz,22,18))break;px=rr(-hw*0.3,hw*0.3);pz=rr(-hd*0.3,hd*0.3);}
+    const pw=rr(16,26),pd=rr(14,22);
+    place('PARK',px,pz,pw,2,pd,'#4a7a3a','Memorial Gardens',{desc:'A park. Possibly neglected.'});
+    place('GRASS_PATCH',px,pz,pw+4,0.05,pd+4,'#3a6a2a','',{});
+    for(let t=0;t<ri(3,6);t++)place('PROP_TREE',px+rr(-pw/3,pw/3),pz+rr(-pd/3,pd/3),2,ri(4,7),2,'#3a7a3a','',{});
+    if(rng()>0.3)place('PROP_BENCH',px+rr(-5,5),pz+rr(-5,5),1.8,0.5,0.6,'#8a7055','',{});
+    if(rng()>0.5)place('PROP_CLIMBING_FRAME',px+rr(-6,6),pz+rr(-6,6),3,2.5,3,'#dd5555','',{});
+    if(rng()>0.6)place('POND',px+rr(-4,4),pz+rr(-4,4),rr(4,8),0.2,rr(4,8),'#4a8acc','Pond',{});
+  }
+
+  // --- BUILDINGS ---
+  const buildingCount=8+density*6+ri(0,5);
+  for(let b=0;b<buildingCount;b++){
+    let bx=rr(-hw+10,hw-10),bz=rr(-hd+10,hd-10);
+    const bw=rr(5,14),bd=rr(5,14),bh=rr(4,8+density*2);
+
+    // Snap to road edges
+    let snapped=false;
+    for(const rx of roadXPositions){
+      if(Math.abs(bx-rx)<roadSpacing/2){
+        const side=bx>rx?1:-1;
+        bx=rx+side*(roadW/2+2+bw/2);
+        snapped=true;break;
+      }
+    }
+    if(!snapped)for(const rz of roadZPositions){
+      if(Math.abs(bz-rz)<roadSpacing/2){
+        const side=bz>rz?1:-1;
+        bz=rz+side*(roadW/2+2+bd/2);
+        snapped=true;break;
+      }
+    }
+
+    if(overlaps(bx,bz,bw,bd))continue;
+    const col=pick(pal.bldg);
+    const name=pick(pal.names);
+    place('BUILDING',bx,bz,bw,bh,bd,col,name,{});
+  }
+
+  // --- STREET FURNITURE ---
+  const propCount=10+density*5;
+  for(let p=0;p<propCount;p++){
+    const px=rr(-hw+5,hw-5),pz=rr(-hd+5,hd-5);
+    if(overlaps(px,pz,1,1))continue;
+    const propType=pick(['PROP_LAMP','PROP_LAMP','PROP_BIN','PROP_BENCH','PROP_BOLLARD','PROP_TREE','PROP_TREE_DEAD','PROP_BUSH','PROP_WHEELIE_BIN']);
+    const propData={PROP_LAMP:{w:0.3,h:5,d:0.3,c:'#ffeab5'},PROP_BIN:{w:0.4,h:0.7,d:0.4,c:'#555560'},PROP_BENCH:{w:1.8,h:0.5,d:0.6,c:'#8a7055'},PROP_BOLLARD:{w:0.2,h:0.8,d:0.2,c:'#777777'},PROP_TREE:{w:2,h:6,d:2,c:'#3a7a3a'},PROP_TREE_DEAD:{w:1.5,h:4,d:1.5,c:'#7a6a55'},PROP_BUSH:{w:1.5,h:1,d:1.5,c:'#4a8a4a'},PROP_WHEELIE_BIN:{w:0.6,h:1,d:0.7,c:'#336633'}};
+    const pd=propData[propType]||propData.PROP_LAMP;
+    place(propType,px,pz,pd.w,pd.h,pd.d,pd.c,'',{});
+  }
+
+  // --- VEHICLES ---
+  const vehicleCount=density*3+ri(1,4);
+  for(let v=0;v<vehicleCount;v++){
+    const types=['VEHICLE_CAR','VEHICLE_CAR','VEHICLE_CAR','VEHICLE_VAN','VEHICLE_TAXI','VEHICLE_BUS'];
+    if(style==='luxury'){types.push('VEHICLE_LAMBO','VEHICLE_ROLLS','VEHICLE_ROLLS');}
+    const vt=pick(types);
+    const vData={VEHICLE_CAR:{w:2,h:1.5,d:4.5,c:pick(['#6688cc','#cc6666','#66aa66','#aaaaaa','#cccc66'])},VEHICLE_VAN:{w:2.2,h:2.2,d:5.5,c:'#c8c8c8'},VEHICLE_TAXI:{w:2,h:1.5,d:4.5,c:'#eedd55'},VEHICLE_BUS:{w:2.5,h:3,d:10,c:'#dd4444'},VEHICLE_LAMBO:{w:2,h:1.2,d:4.8,c:'#ff7722'},VEHICLE_ROLLS:{w:2.2,h:1.6,d:5.8,c:'#e8c840'}};
+    const vd=vData[vt]||vData.VEHICLE_CAR;
+    // Park along roads
+    const rx=pick(roadXPositions)||0;
+    const vx=rx+(rng()>0.5?1:-1)*(roadW/2+vd.w/2+0.5);
+    const vz=rr(-hd+10,hd-10);
+    if(!overlaps(vx,vz,vd.w,vd.d))place(vt,vx,vz,vd.w,vd.h,vd.d,vd.c,'',{});
+  }
+
+  // --- SPAWN ---
+  place('SPAWN',0,hd*0.6,1,2,1,'#00ff88','Player Spawn',{});
+
+  // --- TERRAIN ---
+  if(hilly){
+    const t=RG[R].terrain;if(t){
+      const n=t.length;
+      for(let i=0;i<n;i++)for(let j=0;j<n;j++)t[i][j]=0;
+      const hills=ri(2,5);
+      for(let h=0;h<hills;h++){
+        const cx=rr(2,n-2),cz=rr(2,n-2),r=rr(2,5),str=rr(1,4);
+        for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+          const dist=Math.sqrt((i-cx)**2+(j-cz)**2);
+          if(dist<r)t[i][j]+=str*(1-dist/r);
+        }
+      }
+    }
+  }
+
+  sel=null;$('props').classList.remove('active');
+  $('save-modal').classList.remove('active');
+  draw();autoSave();
+  $('status').textContent=`Generated ${items.length} items with seed ${seed}`;
+}
 
 initTerrain();autoLoad();resize();
 </script>
