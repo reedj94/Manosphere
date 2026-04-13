@@ -12,10 +12,59 @@ const INTERACTION_RANGE := 3.5
 var active_poi_id: String = ""
 
 
+func get_active_poi_id() -> String:
+	return active_poi_id
+
+
 func _ready() -> void:
 	GameState.current_region = GameState.Region.CONSETT
 	_spawn_all_pois()
 	_spawn_street_props()
+	_apply_time_of_day()
+	GameState.game_time_advanced.connect(_on_time_advanced)
+
+
+func _on_time_advanced(_new_hour: int) -> void:
+	_apply_time_of_day()
+
+
+func _apply_time_of_day() -> void:
+	var env_node: WorldEnvironment = $WorldEnvironment
+	if not env_node or not env_node.environment:
+		return
+
+	var env: Environment = env_node.environment
+	var sun: DirectionalLight3D = $DirectionalLight3D
+	var hour: int = GameState.game_hour
+	var t: float = 0.0
+
+	if hour >= 6 and hour < 8:
+		t = (hour - 6.0) / 2.0
+	elif hour >= 8 and hour < 18:
+		t = 1.0
+	elif hour >= 18 and hour < 21:
+		t = 1.0 - (hour - 18.0) / 3.0
+	else:
+		t = 0.0
+
+	var day_sky := Color(0.32, 0.52, 0.8)
+	var night_sky := Color(0.04, 0.05, 0.1)
+	var day_horizon := Color(0.68, 0.76, 0.84)
+	var night_horizon := Color(0.08, 0.1, 0.15)
+	var day_ambient := Color(0.82, 0.88, 0.94)
+	var night_ambient := Color(0.15, 0.18, 0.25)
+
+	var sky_mat: ProceduralSkyMaterial = env.sky.sky_material as ProceduralSkyMaterial
+	if sky_mat:
+		sky_mat.sky_top_color = night_sky.lerp(day_sky, t)
+		sky_mat.sky_horizon_color = night_horizon.lerp(day_horizon, t)
+
+	env.ambient_light_color = night_ambient.lerp(day_ambient, t)
+	env.ambient_light_energy = lerpf(0.1, 0.38, t)
+
+	if sun:
+		sun.light_energy = lerpf(0.15, 1.15, t)
+		sun.light_color = Color(0.9, 0.7, 0.5).lerp(Color(1.0, 0.98, 0.95), t)
 
 
 func _spawn_all_pois() -> void:

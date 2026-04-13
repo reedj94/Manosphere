@@ -34,6 +34,7 @@ AudioManager="*res://scripts/core/audio_manager.gd"
 MultiplayerManager="*res://scripts/multiplayer/multiplayer_manager.gd"
 FactionManager="*res://scripts/core/faction_manager.gd"
 POIRegistry="*res://scripts/core/poi_registry.gd"
+BookiesManager="*res://scripts/minigames/bookies_manager.gd"
 
 [display]
 

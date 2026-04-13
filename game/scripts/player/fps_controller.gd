@@ -31,6 +31,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_M:
 		get_tree().change_scene_to_file(MAIN_MENU)
 
+	if event.is_action_pressed("interact"):
+		_try_interact()
+
 
 func _physics_process(delta: float) -> void:
 	if not is_on_floor():
@@ -51,3 +54,13 @@ func _physics_process(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, 0.0, spd * 10.0 * delta)
 
 	move_and_slide()
+
+
+func _try_interact() -> void:
+	var world_script: Node = get_parent()
+	if world_script and world_script.has_method("get_active_poi_id"):
+		var poi_id: String = world_script.get_active_poi_id()
+		if poi_id != "":
+			var ui: Node = get_tree().get_first_node_in_group("poi_interaction_ui")
+			if ui and ui.has_method("open_for_poi"):
+				ui.open_for_poi(poi_id)

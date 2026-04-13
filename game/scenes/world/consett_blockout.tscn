@@ -1,7 +1,8 @@
-[gd_scene load_steps=10 format=3 uid="uid://c7consettblock01"]
+[gd_scene load_steps=11 format=3 uid="uid://c7consettblock01"]
 
 [ext_resource type="Script" path="res://scripts/world/consett_blockout.gd" id="1_world"]
 [ext_resource type="Script" path="res://scripts/player/fps_controller.gd" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/ui/poi_interaction_ui.tscn" id="3_poi_ui"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_sky"]
 sky_top_color = Color(0.32, 0.52, 0.8, 1)
@@ -82,3 +83,5 @@ offset_bottom = 80.0
 theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 0.92)
 theme_override_font_sizes/font_size = 15
 text = "Loading…"
+
+[node name="POIInteractionUI" parent="." groups=["poi_interaction_ui"] instance=ExtResource("3_poi_ui")]
