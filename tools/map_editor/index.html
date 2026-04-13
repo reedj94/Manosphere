@@ -398,20 +398,85 @@ function animate3D(){requestAnimationFrame(animate3D);if(!view3dActive)return;co
 function rebuild3D(){
   if(!scene3d)return;
   while(scene3d.children.length>2)scene3d.remove(scene3d.children[2]);
-  // Ground
-  const gGeo=new THREE.BoxGeometry(W,0.5,D);const gMat=new THREE.MeshStandardMaterial({color:0x2a2d35,roughness:0.95});const ground=new THREE.Mesh(gGeo,gMat);ground.position.y=-0.25;scene3d.add(ground);
+
+  // Terrain mesh from heightmap
+  const t=RG[R].terrain;
+  if(t&&t.length>1){
+    const n=t.length;
+    const geo=new THREE.PlaneGeometry(W,D,n-1,n-1);
+    geo.rotateX(-Math.PI/2);
+    const verts=geo.attributes.position;
+    let maxH=0;
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+      const idx=j*n+i;
+      const h=t[i][j]||0;
+      if(Math.abs(h)>maxH)maxH=Math.abs(h);
+      verts.setY(idx,h);
+    }
+    geo.computeVertexNormals();
+
+    const colors=new Float32Array(verts.count*3);
+    const gcRgb=hR($('ground-color')?.value||'#2a2d35');
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+      const idx=j*n+i;
+      const h=t[i][j]||0;
+      let r=gcRgb[0],g=gcRgb[1],b=gcRgb[2];
+      if(h>0.1){r=0.3+h*0.04;g=0.5+h*0.05;b=0.25;}
+      else if(h<-0.1){r=0.15;g=0.25;b=0.4+Math.abs(h)*0.06;}
+      colors[idx*3]=r;colors[idx*3+1]=g;colors[idx*3+2]=b;
+    }
+    geo.setAttribute('color',new THREE.BufferAttribute(colors,3));
+
+    const mat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.92,flatShading:true});
+    const mesh=new THREE.Mesh(geo,mat);
+    scene3d.add(mesh);
+  } else {
+    const gGeo=new THREE.BoxGeometry(W,0.5,D);
+    const gMat=new THREE.MeshStandardMaterial({color:0x2a2d35,roughness:0.95});
+    const ground=new THREE.Mesh(gGeo,gMat);ground.position.y=-0.25;
+    scene3d.add(ground);
+  }
+
   // Items
   for(const it of items){
     const rot=it.rotation||0,ew=rot%180===0?it.w:it.d,ed=rot%180===0?it.d:it.w;
     const rgb=hR(it.color);const col=new THREE.Color(rgb[0],rgb[1],rgb[2]);
     let h=it.h;
-    if(['ROAD','PAVEMENT','CROSSING','GRASS_PATCH','MUD_PATCH','GRAVEL','SAND'].includes(it.type))h=0.15;
-    if(['LAKE','POND','RIVER','STREAM'].includes(it.type))h=0.3;
+    const flat=['ROAD','PAVEMENT','CROSSING','GRASS_PATCH','MUD_PATCH','GRAVEL','SAND'];
+    const water=['LAKE','POND','RIVER','STREAM'];
+    if(flat.includes(it.type))h=0.15;
+    if(water.includes(it.type))h=0.3;
+
     const geo=new THREE.BoxGeometry(ew,h,ed);
     const mat=new THREE.MeshStandardMaterial({color:col,roughness:0.85});
-    if(['LAKE','POND','RIVER','STREAM'].includes(it.type)){mat.transparent=true;mat.opacity=0.7;}
-    const mesh=new THREE.Mesh(geo,mat);mesh.position.set(it.px,h/2,it.pz);scene3d.add(mesh);
+    if(water.includes(it.type)){mat.transparent=true;mat.opacity=0.6;mat.color.set(0x3a8acc);}
+    if(it.type==='ROAD'){mat.color.set(0x404048);}
+    if(it.type==='PAVEMENT'){mat.color.set(0x606068);}
+
+    const mesh=new THREE.Mesh(geo,mat);
+    const baseY=t?getTerrainAt3D(it.px,it.pz,t):0;
+    mesh.position.set(it.px, baseY+h/2, it.pz);
+    if(rot)mesh.rotation.y=rot*Math.PI/180;
+    scene3d.add(mesh);
+
+    // Door on buildings
+    if(!flat.includes(it.type)&&!water.includes(it.type)&&!it.type.startsWith('PROP_')&&!it.type.startsWith('VEHICLE')&&it.type!=='SPAWN'&&it.type!=='NPC_SPAWN'&&it.type!=='TRIGGER_ZONE'&&it.type!=='TRAFFIC_ROUTE'&&h>2){
+      const dw=Math.min(ew*0.2,2),dh=Math.min(h*0.35,3);
+      const dGeo=new THREE.BoxGeometry(dw,dh,0.1);
+      const dMat=new THREE.MeshStandardMaterial({color:col.clone().multiplyScalar(0.5),roughness:0.7});
+      const door=new THREE.Mesh(dGeo,dMat);
+      door.position.set(it.px,baseY+dh/2,it.pz+ed/2+0.05);
+      if(rot)door.rotation.y=rot*Math.PI/180;
+      scene3d.add(door);
+    }
   }
+}
+function getTerrainAt3D(wx,wz,t){
+  if(!t||!t.length)return 0;
+  const n=t.length;
+  const i=Math.floor((wx+W/2)/W*n),j=Math.floor((wz+D/2)/D*n);
+  if(i<0||i>=n||j<0||j>=n)return 0;
+  return t[i][j]||0;
 }
 function showView(v){
   document.querySelectorAll('.vt').forEach(b=>b.classList.remove('active'));
