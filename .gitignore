@@ -30,3 +30,6 @@ node_modules/
 __pycache__/
 *.pyc
 .venv/
+
+# Third-party assets (large, downloaded via tools/download_assets.ps1)
+game/assets/third_party/
