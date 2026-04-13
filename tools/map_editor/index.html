@@ -622,70 +622,103 @@ function generateTown(){
 
   items.length=0;idC=1;
   const hw=W/2,hd=D/2;
-  const occ=[];
-  function ov(x,z,w,d){for(const o of occ)if(Math.abs(x-o.x)<(w+o.w)/2+1.5&&Math.abs(z-o.z)<(d+o.d)/2+1.5)return true;return false;}
-  function pl(type,x,z,w,h,d,color,name,opts={}){
-    if(!type.startsWith('ROAD')&&type!=='PAVEMENT'&&type!=='CROSSING')occ.push({x,z,w,d});
-    items.push({id:R+'_'+type.toLowerCase()+'_'+(idC++),type,display_name:name||'',description:opts.desc||'',px:Math.round(x*2)/2,pz:Math.round(z*2)/2,w,h,d,color,faction_id:opts.faction||'',open_hour:opts.open||0,close_hour:opts.close||24,rotation:opts.rot||0});
+
+  // === OCCUPANCY GRID (2x2 unit cells) ===
+  const CELL=2;
+  const gW=Math.ceil(W/CELL),gD=Math.ceil(D/CELL);
+  const grid=[];for(let i=0;i<gW;i++){grid[i]=[];for(let j=0;j<gD;j++)grid[i][j]=0;}
+  // 0=free, 1=road, 2=pavement, 3=building, 4=water, 5=park, 6=prop
+
+  function worldToGrid(wx,wz){return{i:Math.floor((wx+hw)/CELL),j:Math.floor((wz+hd)/CELL)};}
+  function gridToWorld(gi,gj){return{x:gi*CELL-hw+CELL/2,z:gj*CELL-hd+CELL/2};}
+
+  function claimCells(wx,wz,ww,wd,val){
+    const g1=worldToGrid(wx-ww/2,wz-wd/2),g2=worldToGrid(wx+ww/2,wz+wd/2);
+    for(let i=Math.max(0,g1.i);i<=Math.min(gW-1,g2.i);i++)
+      for(let j=Math.max(0,g1.j);j<=Math.min(gD-1,g2.j);j++)
+        grid[i][j]=val;
+  }
+  function cellsFree(wx,wz,ww,wd){
+    const g1=worldToGrid(wx-ww/2,wz-wd/2),g2=worldToGrid(wx+ww/2,wz+wd/2);
+    for(let i=Math.max(0,g1.i);i<=Math.min(gW-1,g2.i);i++)
+      for(let j=Math.max(0,g1.j);j<=Math.min(gD-1,g2.j);j++)
+        if(grid[i][j]!==0)return false;
+    return true;
+  }
+  function cellsAdjToRoad(wx,wz,ww,wd){
+    const g1=worldToGrid(wx-ww/2-CELL,wz-wd/2-CELL),g2=worldToGrid(wx+ww/2+CELL,wz+wd/2+CELL);
+    for(let i=Math.max(0,g1.i);i<=Math.min(gW-1,g2.i);i++)
+      for(let j=Math.max(0,g1.j);j<=Math.min(gD-1,g2.j);j++)
+        if(grid[i][j]===1)return true;
+    return false;
   }
 
-  // === ZONE DEFINITIONS per style ===
-  // Each zone: {name, cx,cz (center fraction of map), radius (fraction), type, buildings[], props[], ground}
+  function pl(type,x,z,w,h,d,color,name,opts={}){
+    items.push({id:R+'_'+type.toLowerCase()+'_'+(idC++),type,display_name:name||'',description:opts.desc||'',px:Math.round(x*2)/2,pz:Math.round(z*2)/2,w,h,d,color,faction_id:opts.faction||'',open_hour:opts.open||0,close_hour:opts.close||24,rotation:opts.rot||0});
+  }
+  function placeAndClaim(type,x,z,w,h,d,color,name,cellVal,opts={}){
+    if(!cellsFree(x,z,w,d))return false;
+    claimCells(x,z,w,d,cellVal);
+    pl(type,x,z,w,h,d,color,name,opts);
+    return true;
+  }
+
+  // === ZONE DEFINITIONS ===
   const ZD={
     northern:[
       {name:'Town Centre',cx:0,cz:0,r:0.22,type:'centre',
-        bldgs:[{n:'Dreggs Bakery',w:7,h:5,d:8,c:'#7a7a72'},{n:'Ye Olde Chippy',w:8,h:4,d:7,c:'#8a7a5a'},{n:'Bargain Grog',w:6,h:5,d:7,c:'#6a6068'},{n:'Cash4Crap',w:8,h:5,d:9,c:'#706860'},{n:'Quidland',w:10,h:5,d:8,c:'#808078'},{n:'BetDread',w:7,h:4,d:8,c:'#5a6a5a'},{n:'Royal Snail',w:6,h:5,d:7,c:'#7a6a55'},{n:'Mouldy Bargains',w:7,h:4,d:6,c:'#756858'}],
+        bldgs:[{n:'Dreggs Bakery',w:6,h:5,d:6,c:'#7a7a72'},{n:'Ye Olde Chippy',w:6,h:4,d:6,c:'#8a7a5a'},{n:'Bargain Grog',w:6,h:5,d:6,c:'#6a6068'},{n:'Cash4Crap',w:8,h:5,d:6,c:'#706860'},{n:'Quidland',w:8,h:5,d:6,c:'#808078'},{n:'BetDread',w:6,h:4,d:6,c:'#5a6a5a'},{n:'Royal Snail',w:6,h:5,d:6,c:'#7a6a55'},{n:'Mouldy Bargains',w:6,h:4,d:6,c:'#756858'}],
         props:['PROP_LAMP','PROP_BIN','PROP_BENCH','PROP_POST_BOX','PROP_BUS_STOP','PROP_PHONE_BOX','PROP_BOLLARD'],ground:'#2a2d35'},
       {name:'Shopping Area',cx:-0.3,cz:-0.15,r:0.18,type:'shops',
-        bldgs:[{n:'Sports Defect',w:14,h:6,d:12,c:'#5a5a65'},{n:'Frozeland',w:10,h:5,d:10,c:'#6a6a75'},{n:'Grim Grub',w:12,h:5,d:10,c:'#706860'},{n:'Spar-se',w:8,h:5,d:8,c:'#7a6a55'},{n:'Doner Dynasty',w:6,h:4,d:7,c:'#8a6a4a'},{n:'Wok This Way',w:7,h:4,d:8,c:'#7a5a4a'}],
-        props:['PROP_LAMP','PROP_BIN','PROP_SHOPPING_TROLLEY','PROP_SHOPPING_TROLLEY','PROP_SKIP','PROP_WHEELIE_BIN'],ground:'#282830'},
+        bldgs:[{n:'Sports Defect',w:12,h:6,d:10,c:'#5a5a65'},{n:'Frozeland',w:8,h:5,d:8,c:'#6a6a75'},{n:'Grim Grub',w:10,h:5,d:8,c:'#706860'},{n:'Spar-se',w:6,h:5,d:6,c:'#7a6a55'},{n:'Doner Dynasty',w:6,h:4,d:6,c:'#8a6a4a'},{n:'Wok This Way',w:6,h:4,d:6,c:'#7a5a4a'}],
+        props:['PROP_LAMP','PROP_BIN','PROP_SHOPPING_TROLLEY','PROP_SKIP','PROP_WHEELIE_BIN'],ground:'#282830'},
       {name:'Residential',cx:0.3,cz:-0.25,r:0.22,type:'residential',
-        bldgs:[{n:'',w:18,h:4,d:6,c:'#706860'},{n:'',w:16,h:4,d:6,c:'#686058'},{n:'',w:20,h:4,d:6,c:'#7a7068'},{n:'',w:14,h:4,d:6,c:'#686060'},{n:'',w:16,h:5,d:6,c:'#706860'}],
-        props:['PROP_LAMP','PROP_WHEELIE_BIN','PROP_WHEELIE_BIN','PROP_FENCE','PROP_HEDGE','PROP_TREE_DEAD','PROP_SKIP','PROP_BIN'],ground:'#252830'},
+        bldgs:[{n:'',w:16,h:4,d:6,c:'#706860'},{n:'',w:14,h:4,d:6,c:'#686058'},{n:'',w:16,h:4,d:6,c:'#7a7068'},{n:'',w:12,h:4,d:6,c:'#686060'},{n:'',w:14,h:5,d:6,c:'#706860'}],
+        props:['PROP_LAMP','PROP_WHEELIE_BIN','PROP_FENCE','PROP_HEDGE','PROP_TREE_DEAD','PROP_BIN'],ground:'#252830'},
       {name:'Industrial',cx:-0.3,cz:0.3,r:0.18,type:'industrial',
-        bldgs:[{n:'Warehouse',w:16,h:7,d:14,c:'#5a5a62'},{n:'Unit 4',w:12,h:6,d:18,c:'#4a4a52'},{n:'Storage',w:14,h:5,d:12,c:'#555560'},{n:'Depot',w:18,h:6,d:16,c:'#484850'}],
-        props:['PROP_SKIP','PROP_SKIP','PROP_BARRIER','PROP_BOLLARD','PROP_LAMP','PROP_FENCE'],ground:'#222228'},
+        bldgs:[{n:'Warehouse',w:14,h:7,d:12,c:'#5a5a62'},{n:'Unit 4',w:10,h:6,d:14,c:'#4a4a52'},{n:'Storage',w:12,h:5,d:10,c:'#555560'},{n:'Depot',w:14,h:6,d:12,c:'#484850'}],
+        props:['PROP_SKIP','PROP_BARRIER','PROP_BOLLARD','PROP_LAMP','PROP_FENCE'],ground:'#222228'},
       {name:'Park',cx:0.25,cz:0.25,r:0.16,type:'park',bldgs:[],
-        props:['PROP_BENCH','PROP_BENCH','PROP_TREE','PROP_TREE','PROP_TREE','PROP_TREE_DEAD','PROP_BUSH','PROP_CLIMBING_FRAME','PROP_SWING','PROP_BIN','PROP_LAMP'],ground:'#2a3a22'},
+        props:['PROP_BENCH','PROP_TREE','PROP_TREE','PROP_TREE_DEAD','PROP_BUSH','PROP_CLIMBING_FRAME','PROP_SWING','PROP_BIN','PROP_LAMP'],ground:'#2a3a22'},
     ],
     city:[
       {name:'Financial District',cx:0,cz:-0.15,r:0.2,type:'centre',
-        bldgs:[{n:'HBSC Tower',w:12,h:30,d:12,c:'#606068'},{n:'Sharkley\'s HQ',w:14,h:28,d:14,c:'#555560'},{n:'The Shiv',w:8,h:35,d:8,c:'#707080'},{n:'WeWaste',w:10,h:20,d:10,c:'#585860'},{n:'Voided & Touche',w:12,h:25,d:12,c:'#6a6a72'},{n:'PricelessWaterCoolers',w:10,h:22,d:10,c:'#484850'}],
-        props:['PROP_LAMP','PROP_LAMP','PROP_BOLLARD','PROP_BOLLARD','PROP_TRAFFIC_LIGHT','PROP_BENCH','PROP_BIN'],ground:'#1e1e24'},
+        bldgs:[{n:'HBSC Tower',w:10,h:30,d:10,c:'#606068'},{n:'Sharkley\'s HQ',w:12,h:28,d:12,c:'#555560'},{n:'The Shiv',w:8,h:35,d:8,c:'#707080'},{n:'WeWaste',w:10,h:20,d:10,c:'#585860'},{n:'Voided & Touche',w:10,h:25,d:10,c:'#6a6a72'},{n:'PricelessWaterCoolers',w:8,h:22,d:8,c:'#484850'}],
+        props:['PROP_LAMP','PROP_BOLLARD','PROP_TRAFFIC_LIGHT','PROP_BENCH','PROP_BIN'],ground:'#1e1e24'},
       {name:'High Street',cx:0.3,cz:0.05,r:0.18,type:'shops',
-        bldgs:[{n:'Prêt-a-Rip-Off',w:7,h:8,d:8,c:'#707080'},{n:'Floptons Estate Agents',w:8,h:6,d:7,c:'#808088'},{n:'Bando\'s',w:9,h:7,d:9,c:'#6a6a72'},{n:'TX Minxx',w:12,h:8,d:10,c:'#585860'},{n:'Costya',w:7,h:6,d:7,c:'#555560'},{n:'Waga-scama',w:8,h:6,d:8,c:'#606068'},{n:'Loots Pharmacy',w:9,h:7,d:8,c:'#484850'}],
+        bldgs:[{n:'Prêt-a-Rip-Off',w:6,h:8,d:6,c:'#707080'},{n:'Floptons Estate Agents',w:6,h:6,d:6,c:'#808088'},{n:'Bando\'s',w:8,h:7,d:8,c:'#6a6a72'},{n:'TX Minxx',w:10,h:8,d:8,c:'#585860'},{n:'Costya',w:6,h:6,d:6,c:'#555560'},{n:'Waga-scama',w:6,h:6,d:6,c:'#606068'},{n:'Loots Pharmacy',w:8,h:7,d:6,c:'#484850'}],
         props:['PROP_LAMP','PROP_BIN','PROP_BENCH','PROP_BUS_STOP','PROP_TRAFFIC_LIGHT','PROP_BOLLARD'],ground:'#222228'},
       {name:'Residential',cx:-0.3,cz:0.2,r:0.2,type:'residential',
-        bldgs:[{n:'',w:10,h:12,d:10,c:'#555560'},{n:'',w:8,h:15,d:8,c:'#606068'},{n:'',w:12,h:10,d:10,c:'#585860'},{n:'',w:10,h:18,d:8,c:'#4a4a52'},{n:'',w:14,h:8,d:10,c:'#6a6a72'}],
-        props:['PROP_LAMP','PROP_WHEELIE_BIN','PROP_TREE','PROP_HEDGE','PROP_FENCE','PROP_BENCH'],ground:'#1e1e28'},
+        bldgs:[{n:'',w:8,h:12,d:8,c:'#555560'},{n:'',w:8,h:15,d:8,c:'#606068'},{n:'',w:10,h:10,d:8,c:'#585860'},{n:'',w:8,h:18,d:8,c:'#4a4a52'},{n:'',w:10,h:8,d:8,c:'#6a6a72'}],
+        props:['PROP_LAMP','PROP_WHEELIE_BIN','PROP_TREE','PROP_HEDGE','PROP_BENCH'],ground:'#1e1e28'},
       {name:'Park',cx:0,cz:0.3,r:0.15,type:'park',bldgs:[],
-        props:['PROP_BENCH','PROP_BENCH','PROP_TREE','PROP_TREE','PROP_TREE','PROP_BUSH','PROP_BUSH','PROP_LAMP','PROP_BIN'],ground:'#1e2e1a'},
+        props:['PROP_BENCH','PROP_TREE','PROP_TREE','PROP_BUSH','PROP_LAMP','PROP_BIN'],ground:'#1e2e1a'},
     ],
     beach:[
       {name:'Beachfront',cx:0,cz:-0.35,r:0.2,type:'beach',
-        bldgs:[{n:'Beach Bar',w:8,h:4,d:6,c:'#d0b890'},{n:'Surf Shack',w:6,h:3,d:5,c:'#a8c0b8'},{n:'Board Rental',w:7,h:3,d:6,c:'#c0a880'},{n:'Tiki Lounge',w:8,h:4,d:7,c:'#b8a890'}],
-        props:['PROP_TREE','PROP_TREE','PROP_TREE','PROP_BENCH','PROP_BENCH','PROP_BIN','PROP_LAMP'],ground:'#d8c898'},
+        bldgs:[{n:'Beach Bar',w:6,h:4,d:6,c:'#d0b890'},{n:'Surf Shack',w:6,h:3,d:6,c:'#a8c0b8'},{n:'Board Rental',w:6,h:3,d:6,c:'#c0a880'},{n:'Tiki Lounge',w:6,h:4,d:6,c:'#b8a890'}],
+        props:['PROP_TREE','PROP_TREE','PROP_BENCH','PROP_BIN','PROP_LAMP'],ground:'#d8c898'},
       {name:'Town Centre',cx:0,cz:0.05,r:0.2,type:'centre',
-        bldgs:[{n:'Smoothie Stop',w:6,h:4,d:6,c:'#b0c8c0'},{n:'Açaí Bowl',w:5,h:3,d:5,c:'#90b0a0'},{n:'Palm Café',w:7,h:4,d:7,c:'#d8c0a0'},{n:'Sunset Grill',w:8,h:4,d:8,c:'#c0a880'},{n:'Flip Flop Store',w:6,h:3,d:6,c:'#a8c0b8'},{n:'Mango Juice',w:5,h:3,d:5,c:'#d0b890'}],
-        props:['PROP_LAMP','PROP_BENCH','PROP_BIN','PROP_TREE','PROP_BUSH','PROP_BOLLARD_LIGHT'],ground:'#c0b080'},
+        bldgs:[{n:'Smoothie Stop',w:6,h:4,d:6,c:'#b0c8c0'},{n:'Açaí Bowl',w:6,h:3,d:6,c:'#90b0a0'},{n:'Palm Café',w:6,h:4,d:6,c:'#d8c0a0'},{n:'Sunset Grill',w:8,h:4,d:6,c:'#c0a880'},{n:'Flip Flop Store',w:6,h:3,d:6,c:'#a8c0b8'}],
+        props:['PROP_LAMP','PROP_BENCH','PROP_BIN','PROP_TREE','PROP_BUSH'],ground:'#c0b080'},
       {name:'Hotel Strip',cx:0.3,cz:0.15,r:0.18,type:'hotels',
-        bldgs:[{n:'Hustler\'s Paradise Hotel',w:14,h:14,d:12,c:'#e0d8c0'},{n:'Sunset Crapto Suites',w:12,h:10,d:10,c:'#d0c8b0'},{n:'Palm Scheme Resort',w:16,h:12,d:14,c:'#c8c0a8'},{n:'Bikini & Blockchain',w:6,h:4,d:6,c:'#b8a890'}],
-        props:['PROP_TREE','PROP_TREE','PROP_BENCH','PROP_LAMP','PROP_BOLLARD_LIGHT','PROP_HEDGE'],ground:'#b8a880'},
+        bldgs:[{n:'Hustler\'s Paradise Hotel',w:12,h:14,d:10,c:'#e0d8c0'},{n:'Sunset Crapto Suites',w:10,h:10,d:10,c:'#d0c8b0'},{n:'Palm Scheme Resort',w:14,h:12,d:12,c:'#c8c0a8'},{n:'Bikini & Blockchain',w:6,h:4,d:6,c:'#b8a890'}],
+        props:['PROP_TREE','PROP_BENCH','PROP_LAMP','PROP_HEDGE'],ground:'#b8a880'},
       {name:'Boardwalk Park',cx:-0.3,cz:0.2,r:0.16,type:'park',bldgs:[],
-        props:['PROP_BENCH','PROP_BENCH','PROP_TREE','PROP_TREE','PROP_TREE','PROP_TREE','PROP_BUSH','PROP_BUSH','PROP_LAMP','PROP_BIN','PROP_ROCK'],ground:'#5a8a3a'},
+        props:['PROP_BENCH','PROP_TREE','PROP_TREE','PROP_BUSH','PROP_LAMP','PROP_BIN','PROP_ROCK'],ground:'#5a8a3a'},
     ],
     luxury:[
       {name:'Marina District',cx:0,cz:-0.1,r:0.22,type:'centre',
-        bldgs:[{n:'Burj al-Cappuccino',w:10,h:40,d:10,c:'#d8c898'},{n:'Palm Tower',w:12,h:50,d:12,c:'#c8b888'},{n:'CraptoSwap Exchange',w:10,h:35,d:10,c:'#e0d0a0'},{n:'Gold Lounge',w:14,h:25,d:12,c:'#d4a830'},{n:'Overpriced Omakase',w:8,h:8,d:8,c:'#c0b080'}],
-        props:['PROP_LAMP','PROP_LAMP','PROP_BOLLARD_LIGHT','PROP_BOLLARD_LIGHT','PROP_HEDGE','PROP_TREE','PROP_BENCH'],ground:'#3a3530'},
+        bldgs:[{n:'Burj al-Cappuccino',w:10,h:40,d:10,c:'#d8c898'},{n:'Palm Tower',w:10,h:50,d:10,c:'#c8b888'},{n:'CraptoSwap Exchange',w:10,h:35,d:10,c:'#e0d0a0'},{n:'Gold Lounge',w:12,h:25,d:10,c:'#d4a830'},{n:'Overpriced Omakase',w:8,h:8,d:8,c:'#c0b080'}],
+        props:['PROP_LAMP','PROP_BOLLARD_LIGHT','PROP_HEDGE','PROP_TREE','PROP_BENCH'],ground:'#3a3530'},
       {name:'Luxury Shopping',cx:-0.28,cz:0.1,r:0.18,type:'shops',
-        bldgs:[{n:'Guccini',w:8,h:10,d:8,c:'#c8b888'},{n:'Rollecks',w:7,h:8,d:7,c:'#d8c898'},{n:'Louis Vuitonne',w:9,h:10,d:9,c:'#b8a878'},{n:'Vursachè',w:8,h:9,d:8,c:'#e0d0a0'},{n:'Lambogini Showroom',w:16,h:8,d:14,c:'#a89868'},{n:'The Sheikh\'s Stitch',w:7,h:8,d:7,c:'#d0c090'}],
-        props:['PROP_LAMP','PROP_BOLLARD_LIGHT','PROP_HEDGE','PROP_HEDGE','PROP_BENCH','PROP_TREE'],ground:'#342e28'},
+        bldgs:[{n:'Guccini',w:8,h:10,d:8,c:'#c8b888'},{n:'Rollecks',w:6,h:8,d:6,c:'#d8c898'},{n:'Louis Vuitonne',w:8,h:10,d:8,c:'#b8a878'},{n:'Vursachè',w:8,h:9,d:8,c:'#e0d0a0'},{n:'Lambogini Showroom',w:14,h:8,d:12,c:'#a89868'},{n:'The Sheikh\'s Stitch',w:6,h:8,d:6,c:'#d0c090'}],
+        props:['PROP_LAMP','PROP_BOLLARD_LIGHT','PROP_HEDGE','PROP_BENCH','PROP_TREE'],ground:'#342e28'},
       {name:'Residential Towers',cx:0.3,cz:0.15,r:0.2,type:'residential',
-        bldgs:[{n:'The Penthouse',w:14,h:55,d:14,c:'#d8c898'},{n:'Diamond Tower',w:12,h:45,d:12,c:'#c0b080'},{n:'Apex Retreat',w:10,h:40,d:10,c:'#e0d0a0'},{n:'Ascend Media',w:10,h:30,d:10,c:'#c8b888'}],
-        props:['PROP_HEDGE','PROP_HEDGE','PROP_TREE','PROP_TREE','PROP_BENCH','PROP_BOLLARD_LIGHT','PROP_LAMP'],ground:'#302a24'},
+        bldgs:[{n:'The Penthouse',w:12,h:55,d:12,c:'#d8c898'},{n:'Diamond Tower',w:10,h:45,d:10,c:'#c0b080'},{n:'Apex Retreat',w:10,h:40,d:10,c:'#e0d0a0'},{n:'Ascend Media',w:10,h:30,d:10,c:'#c8b888'}],
+        props:['PROP_HEDGE','PROP_TREE','PROP_BENCH','PROP_BOLLARD_LIGHT','PROP_LAMP'],ground:'#302a24'},
       {name:'Oasis Park',cx:0,cz:0.35,r:0.15,type:'park',bldgs:[],
-        props:['PROP_BENCH','PROP_BENCH','PROP_TREE','PROP_TREE','PROP_TREE','PROP_BUSH','PROP_BUSH','PROP_HEDGE','PROP_HEDGE','PROP_LAMP','PROP_BOLLARD_LIGHT','PROP_ROCK'],ground:'#2a4a2a'},
+        props:['PROP_BENCH','PROP_TREE','PROP_TREE','PROP_BUSH','PROP_HEDGE','PROP_LAMP','PROP_ROCK'],ground:'#2a4a2a'},
     ],
   };
   const zones=ZD[style]||ZD.northern;
@@ -695,126 +728,146 @@ function generateTown(){
   const vehPool=style==='luxury'?['VEHICLE_LAMBO','VEHICLE_ROLLS','VEHICLE_ROLLS','VEHICLE_CAR','VEHICLE_TAXI']:style==='city'?['VEHICLE_CAR','VEHICLE_TAXI','VEHICLE_TAXI','VEHICLE_BUS','VEHICLE_VAN']:style==='beach'?['VEHICLE_CAR','VEHICLE_LAMBO','VEHICLE_TAXI']:['VEHICLE_CAR','VEHICLE_CAR','VEHICLE_VAN','VEHICLE_BUS'];
   const carCols=style==='luxury'?['#e8c840','#ffffff','#222222','#cc0000']:style==='city'?['#333338','#444448','#555558']:style==='beach'?['#cc4444','#44aacc','#ffffff','#eecc44']:['#6688cc','#888888','#aa6666','#777777'];
 
-  // Beach edge
+  const propDB={PROP_LAMP:{w:0.3,h:5,d:0.3,c:'#ffeab5'},PROP_BOLLARD_LIGHT:{w:0.2,h:1,d:0.2,c:'#aaa'},PROP_BIN:{w:0.4,h:0.7,d:0.4,c:'#555560'},PROP_BENCH:{w:1.8,h:0.5,d:0.6,c:'#8a7055'},PROP_BOLLARD:{w:0.2,h:0.8,d:0.2,c:'#777'},PROP_TREE:{w:2,h:6,d:2,c:'#3a7a3a'},PROP_TREE_DEAD:{w:1.5,h:4,d:1.5,c:'#7a6a55'},PROP_BUSH:{w:1.5,h:1,d:1.5,c:'#4a8a4a'},PROP_WHEELIE_BIN:{w:0.6,h:1,d:0.7,c:'#336633'},PROP_SKIP:{w:2,h:1.5,d:3,c:'#ccaa22'},PROP_SHOPPING_TROLLEY:{w:0.6,h:0.9,d:0.9,c:'#bbb'},PROP_POST_BOX:{w:0.5,h:1.2,d:0.5,c:'#dd3333'},PROP_BUS_STOP:{w:3,h:2.8,d:1.5,c:'#5577bb'},PROP_PHONE_BOX:{w:1,h:2.5,d:1,c:'#dd3333'},PROP_TRAFFIC_LIGHT:{w:0.3,h:3.5,d:0.3,c:'#444'},PROP_BARRIER:{w:3,h:1,d:0.3,c:'#ee8800'},PROP_HEDGE:{w:0.6,h:1.2,d:4,c:'#3a6a3a'},PROP_FENCE:{w:0.1,h:1.2,d:6,c:'#9a8a70'},PROP_ROCK:{w:1,h:0.5,d:1,c:'#808080'},PROP_CLIMBING_FRAME:{w:3,h:2.5,d:3,c:'#dd5555'},PROP_SWING:{w:3,h:2.5,d:1,c:'#55aadd'}};
+
+  // === STEP 1: BEACH/SAND EDGE (claim cells but no overlap check needed for ground) ===
   if(style==='beach'){
     pl('SAND',0,-hd+8,W,0.05,20,'#d8c898','Beach',{});
-    pl('SAND',0,-hd+2,W,0.05,6,'#e0d0a0','Shoreline',{});
     pl('LAKE',0,-hd-6,W+20,0.3,18,waterCol,'Ocean',{});
+    claimCells(0,-hd+8,W,20,4);
+    claimCells(0,-hd-6,W+20,18,4);
   }
-  // Dubai sand patches
-  if(style==='luxury'){for(let s=0;s<4;s++)pl('SAND',rr(-hw*0.6,hw*0.6),rr(-hd*0.5,hd*0.5),rr(10,22),0.05,rr(8,18),'#d8c898','',{});}
+  if(style==='luxury'){for(let s=0;s<3;s++){const sx=rr(-hw*0.5,hw*0.5),sz=rr(-hd*0.4,hd*0.4);pl('SAND',sx,sz,rr(10,20),0.05,rr(8,16),'#d8c898','',{});}}
 
-  // === ROADS: organic layout connecting zone centres ===
-  const roadW=6;
-  const roadSegs=[];
-  // Main road through centre (horizontal)
-  pl('ROAD',0,0,W*0.85,0.1,roadW,roadCol,'',{});
-  pl('PAVEMENT',0,-roadW/2-1,W*0.85,0.15,2,paveCol,'',{});
-  pl('PAVEMENT',0,roadW/2+1,W*0.85,0.15,2,paveCol,'',{});
-  // Main road (vertical)
-  pl('ROAD',0,0,roadW,0.1,D*0.85,roadCol,'',{});
-  pl('PAVEMENT',-roadW/2-1,0,2,0.15,D*0.85,paveCol,'',{});
-  pl('PAVEMENT',roadW/2+1,0,2,0.15,D*0.85,paveCol,'',{});
-  pl('CROSSING',0,roadW/2+2,roadW,0.12,2,'#e0e0e0','',{});
+  // === STEP 2: ROADS (grid with jitter, claim cells) ===
+  const roadW=6,paveW=2;
+  const roadSpacing=style==='city'?24:style==='luxury'?28:style==='beach'?34:30;
+  const margin=12;
+  const rxPos=[],rzPos=[];
 
-  // Roads to each zone
-  for(const z of zones){
-    const zx=z.cx*W,zz=z.cz*D;
-    if(Math.abs(zx)>roadW){
-      pl('ROAD',zx,zz/2,roadW,0.1,Math.abs(zz)+roadW,roadCol,'',{});
-      pl('PAVEMENT',zx-roadW/2-1,zz/2,2,0.15,Math.abs(zz)+roadW,paveCol,'',{});
-      pl('PAVEMENT',zx+roadW/2+1,zz/2,2,0.15,Math.abs(zz)+roadW,paveCol,'',{});
-    }
-    if(Math.abs(zz)>roadW){
-      pl('ROAD',zx/2,zz,Math.abs(zx)+roadW,0.1,roadW,roadCol,'',{});
-      pl('PAVEMENT',zx/2,zz-roadW/2-1,Math.abs(zx)+roadW,0.15,2,paveCol,'',{});
-      pl('PAVEMENT',zx/2,zz+roadW/2+1,Math.abs(zx)+roadW,0.15,2,paveCol,'',{});
-    }
-    // Side streets within zone
-    const sideCount=ri(1,2+density);
-    for(let s=0;s<sideCount;s++){
-      const sx=zx+rr(-z.r*W*0.5,z.r*W*0.5);
-      const sz=zz+rr(-z.r*D*0.5,z.r*D*0.5);
-      const horiz=rng()>0.5;
-      const len=rr(15,z.r*W*0.8);
-      if(horiz){pl('ROAD',sx,sz,len,0.1,5,roadCol,'',{});pl('PAVEMENT',sx,sz-3.5,len,0.15,1.5,paveCol,'',{});pl('PAVEMENT',sx,sz+3.5,len,0.15,1.5,paveCol,'',{});}
-      else{pl('ROAD',sx,sz,5,0.1,len,roadCol,'',{});pl('PAVEMENT',sx-3.5,sz,1.5,0.15,len,paveCol,'',{});pl('PAVEMENT',sx+3.5,sz,1.5,0.15,len,paveCol,'',{});}
-    }
-    pl('CROSSING',zx,zz,roadW,0.12,2,'#e0e0e0','',{});
+  // Vertical roads
+  for(let x=-hw+margin+rr(0,5);x<hw-margin;x+=roadSpacing+rr(-3,3)){
+    const rx=Math.round(x*2)/2;
+    if(!cellsFree(rx,0,roadW+paveW*2+2,D-margin*2))continue;
+    claimCells(rx,0,roadW+paveW*2+2,D-margin*2,1);
+    pl('ROAD',rx,0,roadW,0.1,D-margin*2,roadCol,'',{});
+    pl('PAVEMENT',rx-roadW/2-paveW/2-0.5,0,paveW,0.15,D-margin*2,paveCol,'',{});
+    pl('PAVEMENT',rx+roadW/2+paveW/2+0.5,0,paveW,0.15,D-margin*2,paveCol,'',{});
+    rxPos.push(rx);
+  }
+  // Horizontal roads
+  for(let z=-hd+margin+rr(0,5);z<hd-margin;z+=roadSpacing+rr(-3,3)){
+    const rz=Math.round(z*2)/2;
+    if(!cellsFree(0,rz,W-margin*2,roadW+paveW*2+2))continue;
+    claimCells(0,rz,W-margin*2,roadW+paveW*2+2,1);
+    pl('ROAD',0,rz,W-margin*2,0.1,roadW,roadCol,'',{});
+    pl('PAVEMENT',0,rz-roadW/2-paveW/2-0.5,W-margin*2,0.15,paveW,paveCol,'',{});
+    pl('PAVEMENT',0,rz+roadW/2+paveW/2+0.5,W-margin*2,0.15,paveW,paveCol,'',{});
+    rzPos.push(rz);
+  }
+  // Crossings at intersections
+  for(const rx of rxPos)for(const rz of rzPos){
+    if(rng()>0.3)pl('CROSSING',rx,rz+roadW/2+paveW+1,roadW,0.12,2,'#e0e0e0','',{});
   }
 
-  // === FILL EACH ZONE ===
+  // === STEP 3: WATER (claim cells) ===
+  if(hasRiver||style==='city'){
+    const side=rng()>0.5?1:-1;const rx=side*rr(hw*0.6,hw*0.9);
+    const rw=rr(4,8);
+    if(cellsFree(rx,0,rw+2,D*0.85)){
+      claimCells(rx,0,rw+2,D*0.85,4);
+      pl('RIVER',rx,0,rw,0.25,D*0.85,waterCol,'River',{});
+    }
+  }
+  if(hasLake){
+    for(let t=0;t<30;t++){
+      const lx=rr(-hw*0.3,hw*0.3),lz=rr(-hd*0.3,hd*0.3),lw=rr(14,24),ld=rr(12,20);
+      if(cellsFree(lx,lz,lw+2,ld+2)){claimCells(lx,lz,lw,ld,4);pl('LAKE',lx,lz,lw,0.3,ld,waterCol,'Lake',{});break;}
+    }
+  }
+
+  // === STEP 4: ZONES — place buildings in free cells adjacent to roads ===
   for(const z of zones){
     const zx=z.cx*W,zz=z.cz*D,zr=z.r*Math.min(W,D);
 
-    // Ground cover
+    // Ground cover for parks
     if(z.type==='park'){
-      pl('GRASS_PATCH',zx,zz,zr*1.8,0.05,zr*1.8,z.ground,'',{});
-      if(hasPark){
-        const pn=style==='northern'?'Memorial Gardens':style==='city'?'Victoria Gardens':style==='beach'?'Sunset Boardwalk':'Oasis Promenade';
-        pl('PARK',zx,zz,zr*1.4,2,zr*1.4,'#3a6a2a',pn,{desc:z.name});
-      }
-      if(rng()>0.4)pl('POND',zx+rr(-zr*0.3,zr*0.3),zz+rr(-zr*0.3,zr*0.3),rr(5,12),0.2,rr(5,10),'#4a8acc','Pond',{});
-      // Play equipment in northern parks
-      if(style==='northern'){
-        pl('PROP_CLIMBING_FRAME',zx+rr(-8,8),zz+rr(-8,8),3,2.5,3,'#dd5555','',{});
-        pl('PROP_SWING',zx+rr(-10,10),zz+rr(-10,10),3,2.5,1,'#55aadd','',{});
+      const pw=zr*1.6,pd=zr*1.6;
+      if(cellsFree(zx,zz,pw,pd)){
+        claimCells(zx,zz,pw,pd,5);
+        pl('GRASS_PATCH',zx,zz,pw,0.05,pd,z.ground,'',{});
+        if(hasPark){
+          const pn=style==='northern'?'Memorial Gardens':style==='city'?'Victoria Gardens':style==='beach'?'Sunset Boardwalk':'Oasis Promenade';
+          pl('PARK',zx,zz,pw*0.8,2,pd*0.8,'#3a6a2a',pn,{});
+        }
+        if(rng()>0.4){const px=zx+rr(-pw*0.2,pw*0.2),pz=zz+rr(-pd*0.2,pd*0.2);pl('POND',px,pz,rr(5,10),0.2,rr(5,8),'#4a8acc','Pond',{});}
+        if(style==='northern'){
+          placeAndClaim('PROP_CLIMBING_FRAME',zx+rr(-6,6),zz+rr(-6,6),3,2.5,3,'#dd5555','',6);
+          placeAndClaim('PROP_SWING',zx+rr(-8,8),zz+rr(-8,8),3,2.5,1,'#55aadd','',6);
+        }
       }
     } else if(z.type==='beach'){
-      pl('SAND',zx,zz,zr*2,0.05,zr*1.6,'#d8c898','',{});
+      pl('SAND',zx,zz,zr*1.8,0.05,zr*1.4,'#d8c898','',{});
     } else if(z.type==='industrial'){
-      pl('GRAVEL',zx,zz,zr*1.6,0.05,zr*1.6,'#5a5a52','',{});
+      pl('GRAVEL',zx,zz,zr*1.4,0.05,zr*1.4,'#5a5a52','',{});
     }
 
-    // Buildings
-    const bldgCount=z.bldgs.length>0?Math.min(z.bldgs.length,3+density*2):0;
-    for(let b=0;b<bldgCount;b++){
+    // Buildings — try to place each, skip if overlap
+    const bCount=Math.min(z.bldgs.length,2+density*2);
+    for(let b=0;b<bCount;b++){
       const tmpl=z.bldgs[b%z.bldgs.length];
-      const angle=rng()*Math.PI*2;
-      const dist=rr(zr*0.15,zr*0.7);
-      let bx=zx+Math.cos(angle)*dist,bz=zz+Math.sin(angle)*dist;
-      bx=Math.max(-hw+tmpl.w,Math.min(hw-tmpl.w,bx));
-      bz=Math.max(-hd+tmpl.d,Math.min(hd-tmpl.d,bz));
-      if(ov(bx,bz,tmpl.w,tmpl.d))continue;
-      const hVar=tmpl.h+rr(-1,2);
-      pl('BUILDING',bx,bz,tmpl.w+rr(-1,1),hVar,tmpl.d+rr(-1,1),tmpl.c,tmpl.n,{});
+      let placed=false;
+      for(let attempt=0;attempt<20;attempt++){
+        const angle=rng()*Math.PI*2;
+        const dist=rr(zr*0.1,zr*0.65);
+        let bx=Math.round((zx+Math.cos(angle)*dist)*2)/2;
+        let bz=Math.round((zz+Math.sin(angle)*dist)*2)/2;
+        bx=Math.max(-hw+tmpl.w,Math.min(hw-tmpl.w,bx));
+        bz=Math.max(-hd+tmpl.d,Math.min(hd-tmpl.d,bz));
+        const bw=tmpl.w+rr(-1,1),bd=tmpl.d+rr(-1,1),bh=tmpl.h+rr(-1,2);
+        if(cellsFree(bx,bz,bw+1,bd+1)&&cellsAdjToRoad(bx,bz,bw,bd)){
+          claimCells(bx,bz,bw,bd,3);
+          pl('BUILDING',bx,bz,bw,bh,bd,tmpl.c,tmpl.n,{});
+          placed=true;break;
+        }
+      }
     }
 
-    // Props scattered in zone
-    const propCount=5+density*3;
-    for(let p=0;p<propCount;p++){
-      const angle=rng()*Math.PI*2,dist=rr(0,zr*0.85);
-      const px=zx+Math.cos(angle)*dist,pz=zz+Math.sin(angle)*dist;
-      if(px<-hw+2||px>hw-2||pz<-hd+2||pz>hd-2)continue;
-      if(ov(px,pz,2,2))continue;
+    // Props — place in free cells within zone
+    const pCount=4+density*2;
+    for(let p=0;p<pCount;p++){
       const pt=pick(z.props);
-      const pd={PROP_LAMP:{w:0.3,h:5,d:0.3,c:'#ffeab5'},PROP_BOLLARD_LIGHT:{w:0.2,h:1,d:0.2,c:'#aaa'},PROP_BIN:{w:0.4,h:0.7,d:0.4,c:'#555560'},PROP_BENCH:{w:1.8,h:0.5,d:0.6,c:'#8a7055'},PROP_BOLLARD:{w:0.2,h:0.8,d:0.2,c:'#777'},PROP_TREE:{w:2,h:ri(4,8),d:2,c:'#3a7a3a'},PROP_TREE_DEAD:{w:1.5,h:4,d:1.5,c:'#7a6a55'},PROP_BUSH:{w:1.5,h:1,d:1.5,c:'#4a8a4a'},PROP_WHEELIE_BIN:{w:0.6,h:1,d:0.7,c:'#336633'},PROP_SKIP:{w:2,h:1.5,d:3,c:'#ccaa22'},PROP_SHOPPING_TROLLEY:{w:0.6,h:0.9,d:0.9,c:'#bbb'},PROP_POST_BOX:{w:0.5,h:1.2,d:0.5,c:'#dd3333'},PROP_BUS_STOP:{w:3,h:2.8,d:1.5,c:'#5577bb'},PROP_PHONE_BOX:{w:1,h:2.5,d:1,c:'#dd3333'},PROP_TRAFFIC_LIGHT:{w:0.3,h:3.5,d:0.3,c:'#444'},PROP_BARRIER:{w:3,h:1,d:0.3,c:'#ee8800'},PROP_HEDGE:{w:0.6,h:1.2,d:rr(4,8),c:'#3a6a3a'},PROP_FENCE:{w:0.1,h:1.2,d:rr(4,10),c:'#9a8a70'},PROP_ROCK:{w:rr(0.5,1.5),h:rr(0.3,0.8),d:rr(0.5,1.5),c:'#808080'},PROP_CLIMBING_FRAME:{w:3,h:2.5,d:3,c:'#dd5555'},PROP_SWING:{w:3,h:2.5,d:1,c:'#55aadd'}};
-      const d=pd[pt]||pd.PROP_LAMP;
-      pl(pt,px,pz,d.w,d.h,d.d,d.c,'',{});
+      const pd=propDB[pt]||propDB.PROP_LAMP;
+      for(let attempt=0;attempt<10;attempt++){
+        const angle=rng()*Math.PI*2,dist=rr(0,zr*0.75);
+        const px=Math.round((zx+Math.cos(angle)*dist)*2)/2;
+        const pz=Math.round((zz+Math.sin(angle)*dist)*2)/2;
+        if(px<-hw+2||px>hw-2||pz<-hd+2||pz>hd-2)continue;
+        if(placeAndClaim(pt,px,pz,pd.w,pd.h,pd.d,pd.c,'',6))break;
+      }
     }
   }
 
-  // === VEHICLES along main roads ===
-  const vCount=5+density*4;
+  // === STEP 5: VEHICLES — park along roads in free cells ===
+  const vCount=4+density*3;
   for(let v=0;v<vCount;v++){
     const vt=pick(vehPool);
     const sz={VEHICLE_CAR:{w:2,h:1.5,d:4.5},VEHICLE_VAN:{w:2.2,h:2.2,d:5.5},VEHICLE_TAXI:{w:2,h:1.5,d:4.5},VEHICLE_BUS:{w:2.5,h:3,d:10},VEHICLE_LAMBO:{w:2,h:1.2,d:4.8},VEHICLE_ROLLS:{w:2.2,h:1.6,d:5.8}}[vt]||{w:2,h:1.5,d:4.5};
     const vc=vt==='VEHICLE_TAXI'?'#eedd55':vt==='VEHICLE_BUS'?'#dd4444':vt==='VEHICLE_LAMBO'?'#ff7722':vt==='VEHICLE_ROLLS'?'#e8c840':vt==='VEHICLE_VAN'?'#c8c8c8':pick(carCols);
-    const onVert=rng()>0.5;
-    let vx,vz;
-    if(onVert){vx=(rng()>0.5?1:-1)*(roadW/2+sz.w/2+0.5);vz=rr(-hd*0.7,hd*0.7);}
-    else{vx=rr(-hw*0.7,hw*0.7);vz=(rng()>0.5?1:-1)*(roadW/2+sz.d/2+0.5);}
-    if(!ov(vx,vz,sz.w,sz.d))pl(vt,vx,vz,sz.w,sz.h,sz.d,vc,'',{rot:onVert?0:90});
+    for(let attempt=0;attempt<15;attempt++){
+      const useVert=rng()>0.5;
+      let vx,vz;
+      if(useVert&&rxPos.length){const rx=pick(rxPos);vx=rx+(rng()>0.5?1:-1)*(roadW/2+sz.w/2+paveW+1);vz=rr(-hd*0.6,hd*0.6);}
+      else if(rzPos.length){const rz=pick(rzPos);vz=rz+(rng()>0.5?1:-1)*(roadW/2+sz.d/2+paveW+1);vx=rr(-hw*0.6,hw*0.6);}
+      else{vx=rr(-hw*0.5,hw*0.5);vz=rr(-hd*0.5,hd*0.5);}
+      if(placeAndClaim(vt,vx,vz,sz.w,sz.h,sz.d,vc,'',6,{rot:useVert?0:90}))break;
+    }
   }
-
-  // === WATER ===
-  if(hasRiver||style==='city'){const side=rng()>0.5?1:-1;pl('RIVER',side*rr(hw*0.5,hw*0.85),0,rr(3,7),0.25,D*0.9,waterCol,'River',{});}
-  if(hasLake){let lx=rr(-hw*0.3,hw*0.3),lz=rr(-hd*0.3,hd*0.3);for(let t=0;t<20;t++){if(!ov(lx,lz,22,18))break;lx=rr(-hw*0.3,hw*0.3);lz=rr(-hd*0.3,hd*0.3);}pl('LAKE',lx,lz,rr(14,26),0.3,rr(12,22),waterCol,'Lake',{});}
 
   // Spawn
   pl('SPAWN',0,5,1,2,1,'#00ff88','Player Spawn',{});
 
-  // === TERRAIN ===
+  // === STEP 6: TERRAIN ===
   const doHilly=hilly||(style==='northern');
   if(doHilly){
     const t=RG[R].terrain;if(t){

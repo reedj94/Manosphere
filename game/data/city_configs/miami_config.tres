@@ -1,0 +1,43 @@
+[gd_resource type="Resource" script_class="CityConfiguration" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/citycrafter/city_configuration.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+grid_width = 7
+grid_height = 7
+block_size = 160.0
+street_width = 24.0
+enable_multi_size_blocks = true
+large_block_chance = 0.15
+wide_block_chance = 0.2
+tall_block_chance = 0.1
+enable_edge_extensions = true
+edge_extension_chance = 0.5
+max_edge_extensions = 35
+empty_block_chance = 0.08
+district_mode = 0
+residential_ratio = 0.3
+commercial_ratio = 0.5
+industrial_ratio = 0.2
+noise_scale = 0.08
+rotation_mode = 1
+scale_variation = 0.3
+enable_residential_subdivisions = false
+residential_buildings_min = 3
+residential_buildings_max = 5
+residential_spacing = 20.0
+residential_border_margin = 15.0
+commercial_buildings_min = 6
+commercial_buildings_max = 9
+commercial_spacing = 35.0
+commercial_border_margin = 20.0
+industrial_buildings_min = 2
+industrial_buildings_max = 3
+industrial_spacing = 50.0
+industrial_border_margin = 25.0
+generate_roads = true
+generate_intersections = true
+generate_subdivision_roads = false
+generate_ground = true
+ground_height_offset = -0.1
