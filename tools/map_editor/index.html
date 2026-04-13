@@ -619,6 +619,7 @@ function generateTown(){
   const rr=(a,b)=>a+rng()*(b-a);
   const ri=(a,b)=>Math.floor(rr(a,b+1));
   const pick=arr=>arr[Math.floor(rng()*arr.length)];
+  const clamp=(v,mn,mx)=>Math.max(mn,Math.min(mx,v));
 
   items.length=0;idC=1;
   const hw=W/2,hd=D/2;
@@ -663,10 +664,8 @@ function generateTown(){
     return true;
   }
 
-  // === ZONE DEFINITIONS ===
-  const ZD={
-    northern:[
-      {name:'Town Centre',cx:0,cz:0,r:0.22,type:'centre',
+  // === ORGANIC TOWN GENERATOR v3 ===
+  const UNUSED_PLACEHOLDER_FOR_OLD_ZONES={_:[{name:'_',cx:0,cz:0,r:0.22,type:'_',
         bldgs:[{n:'Dreggs Bakery',w:6,h:5,d:6,c:'#7a7a72'},{n:'Ye Olde Chippy',w:6,h:4,d:6,c:'#8a7a5a'},{n:'Bargain Grog',w:6,h:5,d:6,c:'#6a6068'},{n:'Cash4Crap',w:8,h:5,d:6,c:'#706860'},{n:'Quidland',w:8,h:5,d:6,c:'#808078'},{n:'BetDread',w:6,h:4,d:6,c:'#5a6a5a'},{n:'Royal Snail',w:6,h:5,d:6,c:'#7a6a55'},{n:'Mouldy Bargains',w:6,h:4,d:6,c:'#756858'}],
         props:['PROP_LAMP','PROP_BIN','PROP_BENCH','PROP_POST_BOX','PROP_BUS_STOP','PROP_PHONE_BOX','PROP_BOLLARD'],ground:'#2a2d35'},
       {name:'Shopping Area',cx:-0.3,cz:-0.15,r:0.18,type:'shops',
