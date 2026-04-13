@@ -739,35 +739,75 @@ function generateTown(){
   }
   if(style==='luxury'){for(let s=0;s<3;s++){const sx=rr(-hw*0.5,hw*0.5),sz=rr(-hd*0.4,hd*0.4);pl('SAND',sx,sz,rr(10,20),0.05,rr(8,16),'#d8c898','',{});}}
 
-  // === STEP 2: ROADS (grid with jitter, claim cells) ===
-  const roadW=6,paveW=2;
-  const roadSpacing=style==='city'?24:style==='luxury'?28:style==='beach'?34:30;
-  const margin=12;
+  // === STEP 2: ROADS (intersection-based, segments between nodes) ===
+  const roadW=6,paveW=2,roadTotal=roadW+paveW*2+2;
+  const margin=14;
   const rxPos=[],rzPos=[];
 
-  // Vertical roads
-  for(let x=-hw+margin+rr(0,5);x<hw-margin;x+=roadSpacing+rr(-3,3)){
-    const rx=Math.round(x*2)/2;
-    if(!cellsFree(rx,0,roadW+paveW*2+2,D-margin*2))continue;
-    claimCells(rx,0,roadW+paveW*2+2,D-margin*2,1);
-    pl('ROAD',rx,0,roadW,0.1,D-margin*2,roadCol,'',{});
-    pl('PAVEMENT',rx-roadW/2-paveW/2-0.5,0,paveW,0.15,D-margin*2,paveCol,'',{});
-    pl('PAVEMENT',rx+roadW/2+paveW/2+0.5,0,paveW,0.15,D-margin*2,paveCol,'',{});
-    rxPos.push(rx);
+  // Create intersection points on a jittered grid
+  const baseSpacing=style==='city'?28:style==='luxury'?34:style==='beach'?38:32;
+  const nX=Math.max(2,Math.floor((W-margin*2)/baseSpacing));
+  const nZ=Math.max(2,Math.floor((D-margin*2)/baseSpacing));
+  const spacingX=(W-margin*2)/nX;
+  const spacingZ=(D-margin*2)/nZ;
+
+  for(let i=0;i<=nX;i++){
+    const x=-hw+margin+i*spacingX+rr(-spacingX*0.15,spacingX*0.15);
+    rxPos.push(Math.round(x*2)/2);
   }
-  // Horizontal roads
-  for(let z=-hd+margin+rr(0,5);z<hd-margin;z+=roadSpacing+rr(-3,3)){
-    const rz=Math.round(z*2)/2;
-    if(!cellsFree(0,rz,W-margin*2,roadW+paveW*2+2))continue;
-    claimCells(0,rz,W-margin*2,roadW+paveW*2+2,1);
-    pl('ROAD',0,rz,W-margin*2,0.1,roadW,roadCol,'',{});
-    pl('PAVEMENT',0,rz-roadW/2-paveW/2-0.5,W-margin*2,0.15,paveW,paveCol,'',{});
-    pl('PAVEMENT',0,rz+roadW/2+paveW/2+0.5,W-margin*2,0.15,paveW,paveCol,'',{});
-    rzPos.push(rz);
+  for(let j=0;j<=nZ;j++){
+    const z=-hd+margin+j*spacingZ+rr(-spacingZ*0.15,spacingZ*0.15);
+    rzPos.push(Math.round(z*2)/2);
   }
+
+  function placeRoadSeg(x,z,w,d){
+    claimCells(x,z,w+2,d+2,1);
+    pl('ROAD',x,z,w,0.1,d,roadCol,'',{});
+    if(w>d){
+      pl('PAVEMENT',x,z-d/2-paveW/2-0.5,w,0.15,paveW,paveCol,'',{});
+      pl('PAVEMENT',x,z+d/2+paveW/2+0.5,w,0.15,paveW,paveCol,'',{});
+    }else{
+      pl('PAVEMENT',x-w/2-paveW/2-0.5,z,paveW,0.15,d,paveCol,'',{});
+      pl('PAVEMENT',x+w/2+paveW/2+0.5,z,paveW,0.15,d,paveCol,'',{});
+    }
+  }
+
+  // Horizontal segments between intersection columns
+  for(let j=0;j<rzPos.length;j++){
+    const z=rzPos[j];
+    for(let i=0;i<rxPos.length-1;i++){
+      if(rng()<0.15)continue; // skip some segments for variety
+      const x1=rxPos[i],x2=rxPos[i+1];
+      const mx=(x1+x2)/2,len=Math.abs(x2-x1);
+      placeRoadSeg(mx,z,len,roadW);
+    }
+  }
+
+  // Vertical segments between intersection rows
+  for(let i=0;i<rxPos.length;i++){
+    const x=rxPos[i];
+    for(let j=0;j<rzPos.length-1;j++){
+      if(rng()<0.15)continue;
+      const z1=rzPos[j],z2=rzPos[j+1];
+      const mz=(z1+z2)/2,len=Math.abs(z2-z1);
+      placeRoadSeg(x,mz,roadW,len);
+    }
+  }
+
   // Crossings at intersections
   for(const rx of rxPos)for(const rz of rzPos){
-    if(rng()>0.3)pl('CROSSING',rx,rz+roadW/2+paveW+1,roadW,0.12,2,'#e0e0e0','',{});
+    claimCells(rx,rz,roadTotal,roadTotal,1);
+    if(rng()>0.4)pl('CROSSING',rx,rz,roadW+2,0.12,roadW+2,'#e0e0e0','',{});
+  }
+
+  // Add a few diagonal/curved connector roads for variety
+  const diags=ri(1,2+density);
+  for(let d=0;d<diags;d++){
+    const x1=pick(rxPos),z1=pick(rzPos),x2=pick(rxPos),z2=pick(rzPos);
+    if(x1===x2||z1===z2)continue;
+    const mx=(x1+x2)/2,mz=(z1+z2)/2;
+    placeRoadSeg(mx,z1,Math.abs(x2-x1),roadW);
+    placeRoadSeg(x2,mz,roadW,Math.abs(z2-z1));
   }
 
   // === STEP 3: WATER (claim cells) ===
